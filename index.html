@@ -4,9 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Notion Minimal Calendar</title>
-    <!-- 귀엽고 둥글둥글한 폰트 적용 (Nunito 추가) -->
+    <!-- 귀엽고 둥글둥글한 폰트 적용 (Nunito 유지) -->
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800&family=Noto+Sans+KR:wght@400;500;700&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@600;700;800;900&family=Noto+Sans+KR:wght@400;500;700;900&display=swap');
 
         :root {
             /* 지정해주신 색상 변수 설정 */
@@ -14,7 +14,7 @@
             --text-color: #FFFFFF; /* 흰 글씨 */
             --today-bg: #FFFFFF; /* 당일 활성화 바탕 (흰색) */
             --today-text: #A7C7E7; /* 당일 활성화 글씨 (하늘색) */
-            --cell-size: 36px; /* 모든 칸(요일, 날짜)의 고정 크기 */
+            --cell-size: 38px; /* 칸 크기 */
         }
 
         body {
@@ -31,9 +31,10 @@
 
         .calendar {
             width: 100%;
-            max-width: 320px; /* 고정 크기 그리드에 맞게 사이즈 소폭 조정 */
-            padding: 20px;
+            max-width: 320px; 
+            padding: 24px;
             box-sizing: border-box;
+            /* 불필요한 테두리와 배경색, 그림자 모두 제거 (미니멀) */
         }
 
         .header {
@@ -45,33 +46,36 @@
 
         .month-controls {
             display: flex;
-            align-items: center;
-            gap: 4px;
+            align-items: center; /* 화살표와 텍스트의 수직 높낮이 완벽 정렬 */
+            gap: 8px;
         }
 
         #month-year {
-            font-size: 1.3rem;
+            font-size: 1.35rem;
             font-weight: 800;
             text-align: center;
             letter-spacing: 1px;
             min-width: 95px; /* 화살표 사이 간격 유지 */
+            line-height: 1; /* 텍스트 박스 높이를 글자 크기에 맞춰 화살표와 정렬되게 함 */
         }
 
         .nav-btn {
-            background: none;
+            background: rgba(255, 255, 255, 0.2); /* 둥근 배경 */
             border: none;
             color: var(--text-color);
             cursor: pointer;
-            padding: 5px;
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* 통통 튀는 애니메이션 */
+            transition: all 0.2s ease;
         }
 
         .nav-btn:hover {
-            opacity: 0.8;
-            transform: scale(1.2) rotate(-8deg); /* 살짝 까딱하는 귀여운 효과 */
+            background: rgba(255, 255, 255, 0.4);
+            transform: scale(1.1); /* 깔끔하게 커지기만 함 */
         }
 
         .grid {
@@ -85,47 +89,51 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            width: var(--cell-size); /* 너비 고정 */
-            height: var(--cell-size); /* 높이 고정 */
-            font-size: 0.85rem;
+            width: var(--cell-size);
+            height: 28px;
+            font-size: 0.8rem;
             font-weight: 800;
-            border-bottom: 2px dashed rgba(255, 255, 255, 0.5); /* 실선 대신 귀여운 점선 */
-            margin-bottom: 8px;
+            background-color: transparent;
+            border: none; /* 답답해 보이던 테두리 완전 제거 */
+            margin-bottom: 12px;
             box-sizing: border-box;
+            text-transform: uppercase;
+            letter-spacing: 1px; /* 자간을 살짝 넓혀서 시원하게 */
+            opacity: 0.8; /* 살짝 투명하게 처리해서 날짜와 부드럽게 구분 */
         }
 
         .day {
             display: flex;
             justify-content: center;
             align-items: center;
-            width: var(--cell-size); /* 너비 고정 */
-            height: var(--cell-size); /* 높이 고정 */
-            font-size: 0.95rem;
-            font-weight: 600;
+            width: var(--cell-size);
+            height: var(--cell-size);
+            font-size: 1rem;
+            font-weight: 700;
             text-decoration: none; /* 링크 밑줄 제거 */
             color: inherit;
             border-radius: 50%; /* 동그라미 선택 영역 */
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1); /* 통통 튀는 호버 효과 */
+            transition: all 0.2s ease;
             box-sizing: border-box;
         }
 
         /* 날짜에 마우스를 올렸을 때의 효과 */
         .day:hover {
             background-color: rgba(255, 255, 255, 0.25);
-            transform: scale(1.15);
+            transform: scale(1.1); /* 깔끔하게 커지기만 함 */
         }
 
         /* 당일 (활성화된 영역) 스타일 */
         .day.today {
             background-color: var(--today-bg);
-            color: var(--today-text);
-            font-weight: 800;
-            /* 그림자 효과 제거됨 */
+            color: var(--today-text); /* 당일 글씨는 하늘색 */
+            font-weight: 900;
+            /* 그림자 완전 제거 */
         }
 
         .day.today:hover {
             background-color: rgba(255, 255, 255, 0.95);
-            transform: scale(1.15) translateY(-2px); /* 살짝 위로 뛰는 느낌 */
+            transform: scale(1.1);
         }
 
         /* 빈 날짜 칸 */
@@ -136,21 +144,21 @@
         /* Today 버튼 스타일 수정 */
         .today-btn {
             background-color: var(--today-bg); /* 흰색 바탕 */
-            color: var(--bg-color); /* 하늘색 글씨 */
+            color: var(--today-text); /* 하늘색 글씨 */
             border: none;
             font-family: inherit;
             font-size: 0.8rem;
             font-weight: 800;
-            padding: 4px 12px;
-            border-radius: 14px;
+            padding: 6px 14px;
+            border-radius: 20px;
             cursor: pointer;
-            margin-left: 4px;
-            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            transition: all 0.2s ease;
+            /* 그림자 완전 제거 */
         }
         
         .today-btn:hover {
-            transform: scale(1.1);
             background-color: rgba(255, 255, 255, 0.9);
+            transform: scale(1.05);
         }
     </style>
 </head>
@@ -161,11 +169,11 @@
         <div class="header">
             <div class="month-controls">
                 <button id="prev-month" class="nav-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
                 </button>
                 <div id="month-year"></div>
                 <button id="next-month" class="nav-btn">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18l6-6-6-6"/></svg>
                 </button>
             </div>
             <button id="go-today" class="today-btn">today</button>
