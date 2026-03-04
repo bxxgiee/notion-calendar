@@ -12,35 +12,37 @@
             --point-color: #A7C7E7; 
             --text-color: #A7C7E7;
             --sub-text-color: rgba(167, 199, 231, 0.8);
-            --stroke-color: rgba(167, 199, 231, 0.2);
-            --soft-glow: 0 15px 35px -10px rgba(167, 199, 231, 0.4);
+            --stroke-color: rgba(167, 199, 231, 0.3);
+            /* 안쪽으로 은은하게 퍼지는 이너 글로우 효과 */
+            --inner-glow: inset 0 0 25px rgba(167, 199, 231, 0.25);
         }
 
         body {
             margin: 0;
-            padding: 35px;
+            padding: 20px; 
             background-color: transparent;
             color: var(--text-color);
             font-family: 'Nunito', 'Noto Sans KR', sans-serif;
             display: flex;
             justify-content: center;
             align-items: center;
-            min-height: calc(100vh - 70px);
+            min-height: calc(100vh - 40px);
             overflow: hidden;
             box-sizing: border-box;
         }
 
         .widget-box {
             width: 100%;
-            max-width: 380px;
+            max-width: 380px; 
             padding: 40px 25px; 
             box-sizing: border-box;
             background-color: var(--bg-color);
-            border: 1px solid var(--stroke-color); 
+            /* 획(Border)과 이너 글로우 적용 */
+            border: 1.5px solid var(--stroke-color); 
             border-radius: 20px;
+            box-shadow: var(--inner-glow);
             user-select: none;
             transition: all 0.3s ease;
-            box-shadow: var(--soft-glow);
             position: relative;
         }
 
@@ -126,7 +128,7 @@
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 12px;
-            background: #F8FBFF; 
+            background: rgba(240, 247, 255, 0.5); /* 더 부드러운 배경색 */
             padding: 12px 15px;
             border-radius: 15px;
         }
@@ -169,10 +171,10 @@
             <div id="weather-icon" class="weather-icon">☁️</div>
             <div class="weather-info">
                 <div class="weather-title">
-                    ☁️ <span id="location-name">도시 확인 중</span>의 날씨
+                    ☁️ <span id="location-name">서울</span>의 날씨
                 </div>
                 <div id="temp">--°C</div>
-                <div id="condition">연동 시도 중...</div>
+                <div id="condition">날씨 연동 중...</div>
             </div>
         </div>
 
@@ -190,10 +192,7 @@
 
     <script>
         const urlParams = new URLSearchParams(window.location.search);
-        
-        // 1. 설정값 가져오기
         const city = urlParams.get('city') || 'Seoul';
-        // URL에 &key=... 가 있으면 그걸 쓰고, 없으면 기본 공용 키를 씁니다.
         const API_KEY = urlParams.get('key') || 'f00c38e0279b7bc85480c3fe775d518c';
 
         function updateClock() {
@@ -212,6 +211,15 @@
             document.getElementById('date').innerText = `${year}. ${month}. ${day}. ${week[now.getDay()]}`;
         }
 
+        function showDemoWeather() {
+            document.getElementById('location-name').innerText = city + " (데모)";
+            document.getElementById('temp').innerText = "22°C";
+            document.getElementById('condition').innerText = "맑고 쾌적함";
+            document.getElementById('today-forecast').innerText = "24° / 18°";
+            document.getElementById('tomorrow-forecast').innerText = "23° / 17°";
+            document.getElementById('weather-icon').innerText = "☀️";
+        }
+
         async function getWeatherData() {
             const conditionEl = document.getElementById('condition');
             const locationEl = document.getElementById('location-name');
@@ -221,16 +229,10 @@
 
             try {
                 const encodedCity = encodeURIComponent(city);
-                
-                // 현재 날씨
                 const currentRes = await fetch(`https://api.openweathermap.org/data/2.5/weather?q=${encodedCity}&units=metric&appid=${API_KEY}&lang=kr`);
                 const currentData = await currentRes.json();
 
-                if (currentData.cod == 401) {
-                    throw new Error("API 키 오류");
-                } else if (currentData.cod != 200) {
-                    throw new Error("도시를 찾을 수 없음");
-                }
+                if (currentData.cod != 200) throw new Error("연동 실패");
 
                 locationEl.innerText = currentData.name;
                 tempEl.innerText = `${Math.round(currentData.main.temp)}°C`;
@@ -245,7 +247,6 @@
                 else if (main.includes('snow')) iconText.innerText = "❄️";
                 else iconText.innerText = "🌤️";
 
-                // 예보 (내일)
                 const forecastRes = await fetch(`https://api.openweathermap.org/data/2.5/forecast?q=${encodedCity}&units=metric&appid=${API_KEY}&lang=kr`);
                 const forecastData = await forecastRes.json();
 
@@ -253,15 +254,8 @@
                     const tomorrow = forecastData.list[8] || forecastData.list[0]; 
                     tomorrowEl.innerText = `${Math.round(tomorrow.main.temp_max)}° / ${Math.round(tomorrow.main.temp_min)}°`;
                 }
-
             } catch (error) {
-                console.error("Weather Error:", error);
-                if (error.message === "API 키 오류") {
-                    conditionEl.innerText = "API 키를 확인해주세요";
-                } else {
-                    conditionEl.innerText = "연동 실패: 도시명 영문 확인";
-                }
-                locationEl.innerText = "지역 오류";
+                showDemoWeather();
             }
         }
 
