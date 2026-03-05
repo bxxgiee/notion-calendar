@@ -303,23 +303,62 @@
       rowEl.querySelector('.vol-col').innerText = formatVol(volume);
     }
 
-    // 4. 진짜 데이터 API 호출 (최강의 멀티 프록시 라우팅)
+    // 무한 로딩 방지용 에러 UI 처리 함수
+    function handleErrorState() {
+      document.getElementById('sync-status').innerText = "데이터 접근 지연 (10초 후 재시도)";
+      document.getElementById('sync-status').classList.replace('text-gray-500', 'text-red-500');
+      document.getElementById('status-dot').classList.replace('bg-green-500', 'bg-red-500');
+
+      // 지수 카드 스켈레톤 숨기고 에러 표시
+      INDICES.forEach(symbol => {
+        const el = document.getElementById(`idx-${symbol}`);
+        if(el && el.querySelector('.price').classList.contains('hidden')) {
+          el.querySelector('.price-placeholder').classList.add('hidden');
+          el.querySelector('.price').innerText = '수신실패';
+          el.querySelector('.price').classList.remove('hidden');
+          el.querySelector('.price').classList.add('text-red-400', 'text-[13px]');
+        }
+      });
+
+      // 리스트 스켈레톤 숨기고 에러 표시
+      document.querySelectorAll('.price-col').forEach(el => {
+        if (el.classList.contains('hidden')) {
+          const row = el.closest('.flex');
+          row.querySelectorAll('.price-placeholder').forEach(p => p.classList.add('hidden'));
+          el.innerText = '수신 지연';
+          el.classList.remove('hidden');
+          el.classList.add('text-red-400', 'text-[13px]');
+        }
+      });
+    }
+
+    // 4. 진짜 데이터 API 호출 (무한 로딩 방지용 타임아웃 & 다중 프록시)
     async function fetchRealData() {
       const allSymbols = [...STOCKS.map(s => s.id), ...INDICES].join(',');
-      const targetUrl = `https://query1.finance.yahoo.com/v7/finance/quote?symbols=${allSymbols}`;
+      // query1 대신 조금 더 안정적인 query2 사용
+      const targetUrl = `https://query2.finance.yahoo.com/v7/finance/quote?symbols=${allSymbols}`;
       
-      // 브라우저 단에서 CORS를 뚫기 위해 가장 신뢰성 높은 프록시 2곳을 순차적으로 시도합니다.
+      // 안정성 높은 프록시 4곳 
       const proxyUrls = [
+        `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`,
         `https://api.codetabs.com/v1/proxy?quest=${encodeURIComponent(targetUrl)}`,
-        `https://api.allorigins.win/get?url=${encodeURIComponent(targetUrl)}`
+        `https://corsproxy.io/?url=${encodeURIComponent(targetUrl)}`,
+        `https://api.allorigins.win/raw?url=${encodeURIComponent(targetUrl)}`
       ];
 
       let results = null;
 
       for (const proxy of proxyUrls) {
+        // [핵심] 타임아웃 컨트롤러 (한 프록시가 뻗으면 5초 뒤 칼같이 버림)
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 5000);
+
         try {
-          // 캐시 무효화를 위해 타임스탬프 추가
-          const response = await fetch(proxy + (proxy.includes('?') ? '&' : '?') + '_t=' + Date.now());
+          const response = await fetch(proxy + (proxy.includes('?') ? '&' : '?') + 'nocache=' + Date.now(), { 
+            signal: controller.signal 
+          });
+          clearTimeout(timeoutId);
+
           if (!response.ok) continue;
           
           let data = await response.json();
@@ -331,17 +370,18 @@
 
           if (data && data.quoteResponse && data.quoteResponse.result) {
             results = data.quoteResponse.result;
-            break; // 데이터를 성공적으로 가져오면 루프 탈출
+            break; // 데이터를 성공적으로 가져오면 루프 즉시 탈출
           }
         } catch (e) {
-          console.warn('Proxy route failed, trying next...');
+          clearTimeout(timeoutId);
+          console.warn('Proxy blocked or timeout:', proxy);
+          // 에러가 나도 무시하고 다음 프록시로 빠르게 넘어감
         }
       }
 
+      // 4개 프록시가 전부 실패했을 때 무한 로딩(스켈레톤)을 강제 종료함
       if (!results) {
-        document.getElementById('sync-status').innerText = "데이터 갱신 지연 (서버 혼잡)";
-        document.getElementById('sync-status').classList.replace('text-gray-500', 'text-red-500');
-        document.getElementById('status-dot').classList.replace('bg-green-500', 'bg-red-500');
+        handleErrorState();
         return;
       }
 
@@ -369,9 +409,9 @@
             const isKrw = symbol === "KRW=X";
             const priceFormat = isKrw ? formatNum(price, false) : formatNum(price, true);
 
-            // 스켈레톤 끄기
+            // 스켈레톤 끄기 및 원상복구
             el.querySelector('.price-placeholder').classList.add('hidden');
-            el.querySelector('.price').classList.remove('hidden');
+            el.querySelector('.price').classList.remove('hidden', 'text-red-400', 'text-[13px]');
             el.querySelector('.change').classList.remove('hidden');
 
             el.querySelector('.price').innerText = priceFormat;
@@ -394,8 +434,8 @@
     renderListItems();
     fetchRealData();
     
-    // 12초 주기로 데이터를 긁어옵니다 (무료 서버 차단을 막기 위한 최적의 황금비율)
-    setInterval(fetchRealData, 12000);
+    // 10초 주기로 데이터를 긁어옵니다. 
+    setInterval(fetchRealData, 10000);
 
   </script>
 </body>
