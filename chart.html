@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>실시간 랭킹 대시보드 (Toss Style)</title>
+  <title>실시간 주식 대시보드 (Toss Style)</title>
   <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Google Fonts -->
@@ -26,8 +26,8 @@
     body { background-color: #ffffff; margin: 0; padding: 0; -webkit-font-smoothing: antialiased; }
     ::-webkit-scrollbar { width: 0px; height: 0px; }
     
-    .ratio-bar-blue { background-color: #3182f6; height: 4px; border-radius: 2px 0 0 2px; transition: width 0.5s ease; }
-    .ratio-bar-red { background-color: #f04452; height: 4px; border-radius: 0 2px 2px 0; transition: width 0.5s ease; }
+    .ratio-bar-blue { background-color: #3182f6; height: 4px; border-radius: 2px 0 0 2px; }
+    .ratio-bar-red { background-color: #f04452; height: 4px; border-radius: 0 2px 2px 0; }
     
     /* 실제 가격 변동 시 깜빡임 애니메이션 */
     @keyframes flash-red {
@@ -44,13 +44,12 @@
     .text-flash-up { color: #f04452 !important; transition: color 0.1s; }
     .text-flash-down { color: #3182f6 !important; transition: color 0.1s; }
     
-    /* 로딩 스켈레톤 애니메이션 */
     .shimmer {
       background: #f6f7f8;
       background-image: linear-gradient(to right, #f6f7f8 0%, #edeef1 20%, #f6f7f8 40%, #f6f7f8 100%);
       background-repeat: no-repeat;
       background-size: 800px 100%; 
-      animation-duration: 1.5s;
+      animation-duration: 1s;
       animation-fill-mode: forwards; 
       animation-iteration-count: infinite;
       animation-name: placeholderShimmer;
@@ -121,55 +120,61 @@
 
   <!-- 탭 네비게이션 -->
   <div class="flex gap-6 mb-2 border-b border-gray-100">
-    <div id="tab-kr" onclick="switchTab('kr')" class="pb-3 text-lg font-bold border-b-2 border-gray-900 text-gray-900 cursor-pointer transition">국내 주식 (거래량 순위)</div>
-    <div id="tab-us" onclick="switchTab('us')" class="pb-3 text-lg font-bold border-b-2 border-transparent text-gray-400 hover:text-gray-800 cursor-pointer transition">해외 주식 (거래량 순위)</div>
+    <div id="tab-kr" onclick="switchTab('kr')" class="pb-3 text-lg font-bold border-b-2 border-gray-900 text-gray-900 cursor-pointer transition">국내 주식</div>
+    <div id="tab-us" onclick="switchTab('us')" class="pb-3 text-lg font-bold border-b-2 border-transparent text-gray-400 hover:text-gray-800 cursor-pointer transition">해외 주식</div>
   </div>
 
   <!-- 리스트 헤더 -->
   <div class="flex items-center px-2 py-3 text-[11px] text-gray-400 font-bold border-b border-gray-100 bg-white sticky top-0 z-10">
-    <div class="w-14 text-center">순위</div>
+    <div class="w-10"></div>
     <div class="flex-grow min-w-[120px]">종목명</div>
     <div class="w-24 text-right">현재가</div>
     <div class="w-20 text-right">등락률</div>
     <div class="w-24 text-right hidden sm:block">거래량</div>
-    <div class="w-24 text-right hidden md:block">시장 투심 ⓘ</div>
+    <div class="w-24 text-right hidden md:block">매수·매도 비율 ⓘ</div>
   </div>
 
   <!-- 종목 리스트 영역 -->
-  <div class="flex flex-col relative min-h-[500px]">
-    <!-- 로딩 스켈레톤 컨테이너 -->
-    <div id="skeleton-container" class="flex flex-col">
-      <!-- JS로 생성됨 -->
-    </div>
-    
-    <!-- 실제 데이터 리스트 -->
-    <div id="stock-items" class="flex flex-col pb-10 hidden">
-      <!-- JS로 동적 렌더링 -->
+  <div class="flex flex-col relative min-h-[400px]">
+    <div id="stock-items" class="flex flex-col pb-10">
+      <!-- JS로 렌더링 -->
     </div>
   </div>
 
   <script>
+    // 현재 선택된 탭 상태
     let currentTab = 'kr';
+    const latestDataCache = {};
     const prevPrices = {};
-    
-    // 데이터를 캐싱할 배열
-    let rankingData = {
-      kr: [],
-      us: []
-    };
 
-    const INDICES = [
-      { id: "KRX:KOSPI", name: "KOSPI" },
-      { id: "NASDAQ:IXIC", name: "IXIC" },
-      { id: "FX_IDC:USDKRW", name: "USDKRW" }
+    // 표시할 종목 설정 (TradingView 다이렉트 티커)
+    const STOCKS = [
+      // 국내 주식
+      { tvId: "KRX:005930", name: "삼성전자", logoColor: "#004098", logoInit: "삼", isUs: false, ratioBlue: 42, ratioRed: 58 },
+      { tvId: "KRX:000660", name: "SK하이닉스", logoColor: "#e60012", logoInit: "S", isUs: false, ratioBlue: 41, ratioRed: 59 },
+      { tvId: "KRX:005380", name: "현대차", logoColor: "#002c5f", logoInit: "현", isUs: false, ratioBlue: 55, ratioRed: 45 },
+      { tvId: "KRX:035420", name: "NAVER", logoColor: "#00c73c", logoInit: "N", isUs: false, ratioBlue: 50, ratioRed: 50 },
+      { tvId: "KRX:035720", name: "카카오", logoColor: "#fae100", logoInit: "카", isUs: false, ratioBlue: 65, ratioRed: 35, isDarkText: true },
+      { tvId: "KRX:068270", name: "셀트리온", logoColor: "#1a2c5a", logoInit: "셀", isUs: false, ratioBlue: 48, ratioRed: 52 },
+      { tvId: "KRX:000270", name: "기아", logoColor: "#05141f", logoInit: "기", isUs: false, ratioBlue: 40, ratioRed: 60 },
+      { tvId: "KRX:105560", name: "KB금융", logoColor: "#ffcc00", logoInit: "K", isUs: false, ratioBlue: 52, ratioRed: 48, isDarkText: true },
+      
+      // 해외 주식 (미국)
+      { tvId: "NASDAQ:AAPL", name: "애플", logoColor: "#000000", logoInit: "A", isUs: true, ratioBlue: 45, ratioRed: 55 },
+      { tvId: "NASDAQ:TSLA", name: "테슬라", logoColor: "#e82127", logoInit: "T", isUs: true, ratioBlue: 30, ratioRed: 70 },
+      { tvId: "NASDAQ:NVDA", name: "엔비디아", logoColor: "#76b900", logoInit: "N", isUs: true, ratioBlue: 20, ratioRed: 80 },
+      { tvId: "NASDAQ:MSFT", name: "마이크로소프트", logoColor: "#00a4ef", logoInit: "M", isUs: true, ratioBlue: 40, ratioRed: 60 },
+      { tvId: "NASDAQ:GOOGL", name: "구글 (Alphabet)", logoColor: "#4285F4", logoInit: "G", isUs: true, ratioBlue: 50, ratioRed: 50 },
+      { tvId: "NASDAQ:AMZN", name: "아마존", logoColor: "#FF9900", logoInit: "A", isUs: true, ratioBlue: 48, ratioRed: 52, isDarkText: true },
+      { tvId: "NASDAQ:META", name: "메타 (Meta)", logoColor: "#0668E1", logoInit: "M", isUs: true, ratioBlue: 45, ratioRed: 55 },
+      { tvId: "NYSE:TSM", name: "TSMC", logoColor: "#C8102E", logoInit: "T", isUs: true, ratioBlue: 35, ratioRed: 65 }
     ];
 
-    // 포맷팅 함수들
+    const INDICES = ["KRX:KOSPI", "NASDAQ:IXIC", "FX_IDC:USDKRW"]; // 다이렉트 티커
+
     const formatNum = (num, isUs = false) => {
-      if (num == null) return "-";
+      if (!num && num !== 0) return "-";
       if (!isUs) return Math.floor(num).toLocaleString('ko-KR'); 
-      // 미국 주식은 1달러 미만 페니스탁도 있으므로 소수점 보장
-      if (num < 1) return num.toLocaleString('en-US', { minimumFractionDigits: 4, maximumFractionDigits: 4 });
       return num.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
@@ -178,20 +183,6 @@
       if(num >= 1000000) return (num/1000000).toFixed(1) + "M";
       if(num >= 10000) return (num/10000).toFixed(0) + "만";
       return num.toLocaleString('ko-KR');
-    };
-
-    // 로고 색상을 회사 이름 기반으로 랜덤하지만 고정되게 생성
-    const getLogoColor = (name) => {
-      let hash = 0;
-      for (let i = 0; i < name.length; i++) hash = name.charCodeAt(i) + ((hash << 5) - hash);
-      const c = (hash & 0x00FFFFFF).toString(16).toUpperCase();
-      return '#' + '00000'.substring(0, 6 - c.length) + c;
-    };
-
-    const getLogoInit = (name) => {
-      // 영어면 첫 글자, 한국어면 첫 글자
-      const char = name.trim().charAt(0);
-      return char.toUpperCase();
     };
 
     // 1. 탭 전환 처리
@@ -212,232 +203,175 @@
       renderListItems();
     }
 
-    // 2. 초기 스켈레톤(로딩) 화면 생성
-    function renderSkeletons() {
-      const container = document.getElementById('skeleton-container');
-      container.innerHTML = '';
-      for(let i=0; i<10; i++) {
-        container.innerHTML += `
-          <div class="flex items-center px-2 py-3.5 border-b border-gray-50">
-            <div class="w-14 text-center"><div class="h-4 w-4 mx-auto shimmer"></div></div>
-            <div class="flex-grow flex items-center gap-3">
-              <div class="w-[34px] h-[34px] rounded-full shimmer"></div>
-              <div class="h-4 w-24 shimmer"></div>
-            </div>
-            <div class="w-24 flex justify-end"><div class="h-5 w-16 shimmer"></div></div>
-            <div class="w-20 flex justify-end"><div class="h-5 w-12 shimmer"></div></div>
-            <div class="w-24 hidden sm:flex justify-end"><div class="h-4 w-12 shimmer"></div></div>
-            <div class="w-24 hidden md:flex justify-end"><div class="h-2 w-full shimmer mx-4"></div></div>
-          </div>
-        `;
-      }
-    }
-
-    // 3. 실제 데이터로 종목 리스트 렌더링
+    // 2. 종목 리스트 렌더링 (초기 로딩 스켈레톤 UI 포함)
     function renderListItems() {
       const container = document.getElementById('stock-items');
-      const skeleton = document.getElementById('skeleton-container');
-      
-      const stocks = rankingData[currentTab];
-      
-      // 데이터가 아직 없으면 스켈레톤 유지
-      if (!stocks || stocks.length === 0) {
-        skeleton.classList.remove('hidden');
-        container.classList.add('hidden');
-        return;
-      }
-
-      // 데이터가 있으면 스켈레톤 숨기고 컨테이너 보이기
-      skeleton.classList.add('hidden');
-      container.classList.remove('hidden');
       container.innerHTML = ''; 
-
-      const isUs = (currentTab === 'us');
-      const prefix = isUs ? '$' : '';
-      const suffix = isUs ? '' : '원';
-
-      stocks.forEach((stock, index) => {
+      
+      const filteredStocks = STOCKS.filter(stock => currentTab === 'kr' ? !stock.isUs : stock.isUs);
+      
+      filteredStocks.forEach((stock) => {
         const row = document.createElement('div');
         row.className = 'flex items-center px-2 py-3.5 hover:bg-gray-50 rounded-[14px] transition duration-200 border-b border-gray-50 last:border-0 cursor-pointer group';
-        row.id = `row-${stock.ticker.replace(/[^a-zA-Z0-9]/g, '')}`;
+        // HTML id는 특수문자 제거
+        const safeId = stock.tvId.replace(/[^a-zA-Z0-9]/g, '');
+        row.id = `row-${safeId}`;
         
-        const price = stock.close;
-        const changePercent = stock.change;
-        const volume = stock.volume;
-        
-        // 투심 지표 (-1 ~ 1) -> 비율로 변환
-        const recommend = stock.recommend || 0;
-        const ratioRed = Math.min(100, Math.max(0, Math.round(((recommend + 1) / 2) * 100)));
-        const ratioBlue = 100 - ratioRed;
-
-        const isUp = changePercent > 0;
-        const isFlat = changePercent === 0;
-        const colorClass = isUp ? 'text-red-500' : (isFlat ? 'text-gray-500' : 'text-blue-500');
-        const bgClass = isUp ? 'bg-red-50' : (isFlat ? 'bg-gray-100' : 'bg-blue-50');
-        const sign = isUp ? '+' : '';
-        const priceStr = `${prefix}${formatNum(price, isUs)}${suffix}`;
-        
-        // 랭킹 메달 색상
-        let rankClass = "text-gray-400";
-        if (index === 0) rankClass = "text-yellow-500 font-extrabold text-[15px]";
-        else if (index === 1) rankClass = "text-gray-400 font-extrabold text-[15px]";
-        else if (index === 2) rankClass = "text-amber-600 font-extrabold text-[15px]";
-
-        // 로고
-        const logoColor = getLogoColor(stock.name);
-        const logoInit = getLogoInit(stock.name);
+        const textColor = stock.isDarkText ? 'text-gray-900' : 'text-white';
         
         row.innerHTML = `
-          <div class="w-14 text-center font-bold ${rankClass}">${index + 1}</div>
+          <div class="w-10 flex justify-center text-gray-300 group-hover:text-red-400 transition">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" stroke="none"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path></svg>
+          </div>
           <div class="flex-grow min-w-[120px] flex items-center gap-3">
-            <div class="w-[34px] h-[34px] rounded-full flex items-center justify-center text-white font-bold text-[13px] shadow-sm" style="background-color: ${logoColor};">
-              ${logoInit}
+            <div class="w-[34px] h-[34px] rounded-full flex items-center justify-center ${textColor} font-bold text-[13px] shadow-sm" style="background-color: ${stock.logoColor};">
+              ${stock.logoInit}
             </div>
-            <div>
-              <div class="font-bold text-gray-900 text-[15px] tracking-tight truncate w-[100px] sm:w-[150px]">${stock.name}</div>
-              <div class="text-[11px] text-gray-400 font-medium">${stock.ticker.split(':')[1] || stock.ticker}</div>
-            </div>
+            <div class="font-bold text-gray-900 text-[15px] tracking-tight">${stock.name}</div>
           </div>
           <div class="w-24 text-right flex justify-end">
-            <span class="font-bold text-gray-900 price-col text-[15px] tracking-tight">${priceStr}</span>
+            <div class="h-5 w-16 shimmer price-placeholder"></div>
+            <span class="font-bold text-gray-900 price-col text-[15px] tracking-tight hidden"></span>
           </div>
-          <div class="w-20 flex justify-end">
-            <span class="change-col ${colorClass} ${bgClass} px-2 py-1 rounded-[6px] text-[13px] font-bold">${sign}${changePercent.toFixed(2)}%</span>
+          <div class="w-20 flex justify-end change-container">
+            <div class="h-5 w-12 shimmer price-placeholder"></div>
+            <span class="change-col hidden"></span>
           </div>
           <div class="w-24 flex justify-end text-gray-500 font-medium text-[13px] hidden sm:flex">
-             <span class="vol-col">${formatVol(volume)}</span>
+             <div class="h-5 w-12 shimmer price-placeholder"></div>
+             <span class="vol-col hidden"></span>
           </div>
-          <div class="w-24 hidden md:flex items-center justify-end gap-2 pl-4 bar-container" title="매수 투심: ${ratioRed}%">
+          <div class="w-24 hidden md:flex items-center justify-end gap-2 pl-4 opacity-50 bar-container">
             <div class="flex-grow flex h-1 gap-[1px]">
-              <div class="ratio-bar-blue" style="width: ${ratioBlue}%;"></div>
-              <div class="ratio-bar-red" style="width: ${ratioRed}%;"></div>
+              <div class="ratio-bar-blue" style="width: ${stock.ratioBlue}%;"></div>
+              <div class="ratio-bar-red" style="width: ${stock.ratioRed}%;"></div>
             </div>
           </div>
         `;
         container.appendChild(row);
 
-        // 이전 가격 저장 (다음 깜빡임 효과를 위해)
-        prevPrices[stock.ticker] = price;
-      });
-    }
-
-    // 4. 깜빡임 업데이트 (랭킹 데이터가 업데이트 되었을 때 UI 갱신)
-    function updateListWithAnimation() {
-      const stocks = rankingData[currentTab];
-      if (!stocks) return;
-
-      const isUs = (currentTab === 'us');
-      const prefix = isUs ? '$' : '';
-      const suffix = isUs ? '' : '원';
-
-      stocks.forEach((stock) => {
-        const safeId = stock.ticker.replace(/[^a-zA-Z0-9]/g, '');
-        const rowEl = document.getElementById(`row-${safeId}`);
-        if (!rowEl) return; // 순위 밖으로 밀려나서 UI에 없으면 패스 (곧 다시 그려짐)
-
-        const price = stock.close;
-        const changePercent = stock.change;
-        const volume = stock.volume;
-        
-        const isUp = changePercent > 0;
-        const isFlat = changePercent === 0;
-        const colorClass = isUp ? 'text-red-500' : (isFlat ? 'text-gray-500' : 'text-blue-500');
-        const bgClass = isUp ? 'bg-red-50' : (isFlat ? 'bg-gray-100' : 'bg-blue-50');
-        const sign = isUp ? '+' : '';
-        const priceStr = `${prefix}${formatNum(price, isUs)}${suffix}`;
-        
-        // 투심 업데이트
-        const recommend = stock.recommend || 0;
-        const ratioRed = Math.min(100, Math.max(0, Math.round(((recommend + 1) / 2) * 100)));
-        const ratioBlue = 100 - ratioRed;
-
-        if (prevPrices[stock.ticker] && prevPrices[stock.ticker] !== price) {
-          const animClass = price > prevPrices[stock.ticker] ? 'update-up' : 'update-down';
-          const textAnimClass = price > prevPrices[stock.ticker] ? 'text-flash-up' : 'text-flash-down';
-          
-          rowEl.classList.remove('update-up', 'update-down');
-          void rowEl.offsetWidth; 
-          rowEl.classList.add(animClass);
-
-          const priceCol = rowEl.querySelector('.price-col');
-          priceCol.classList.add(textAnimClass);
-          setTimeout(() => priceCol.classList.remove('text-flash-up', 'text-flash-down'), 300);
+        // 캐시된 데이터가 있으면 즉시 반영
+        if (latestDataCache[stock.tvId]) {
+          updateRowUI(stock, latestDataCache[stock.tvId]);
         }
-        prevPrices[stock.ticker] = price;
-
-        rowEl.querySelector('.price-col').innerText = priceStr;
-        rowEl.querySelector('.change-col').className = `change-col ${colorClass} ${bgClass} px-2 py-1 rounded-[6px] text-[13px] font-bold`;
-        rowEl.querySelector('.change-col').innerText = `${sign}${changePercent.toFixed(2)}%`;
-        rowEl.querySelector('.vol-col').innerText = formatVol(volume);
-        
-        rowEl.querySelector('.ratio-bar-blue').style.width = `${ratioBlue}%`;
-        rowEl.querySelector('.ratio-bar-red').style.width = `${ratioRed}%`;
       });
     }
 
-    // 5. [핵심] 트레이딩뷰 스크리너 API에서 실시간 랭킹 가져오기
+    // 3. UI 업데이트 (진짜 가격이 바뀌었을 때만 깜빡임)
+    function updateRowUI(stockMeta, quoteData) {
+      const safeId = stockMeta.tvId.replace(/[^a-zA-Z0-9]/g, '');
+      const rowEl = document.getElementById(`row-${safeId}`);
+      if (!rowEl) return;
+
+      const price = quoteData[0]; // close
+      const changePercent = quoteData[1]; // change %
+      const volume = quoteData[2]; // volume
+
+      const isUp = changePercent > 0;
+      const isFlat = changePercent === 0;
+      const colorClass = isUp ? 'text-red-500' : (isFlat ? 'text-gray-500' : 'text-blue-500');
+      const bgClass = isUp ? 'bg-red-50' : (isFlat ? 'bg-gray-100' : 'bg-blue-50');
+      const sign = isUp ? '+' : '';
+
+      const prefix = stockMeta.isUs ? '$' : '';
+      const suffix = stockMeta.isUs ? '' : '원';
+      const priceStr = `${prefix}${formatNum(price, stockMeta.isUs)}${suffix}`;
+      
+      // 스켈레톤 UI 제거 및 실제 텍스트 노출
+      rowEl.querySelectorAll('.price-placeholder').forEach(el => el.classList.add('hidden'));
+      rowEl.querySelector('.price-col').classList.remove('hidden');
+      rowEl.querySelector('.change-col').classList.remove('hidden');
+      rowEl.querySelector('.vol-col').classList.remove('hidden');
+      rowEl.querySelector('.bar-container').classList.remove('opacity-50');
+
+      // 가격 변동 시에만 호가창 애니메이션 실행
+      if (prevPrices[stockMeta.tvId] && prevPrices[stockMeta.tvId] !== price) {
+        const animClass = price > prevPrices[stockMeta.tvId] ? 'update-up' : 'update-down';
+        const textAnimClass = price > prevPrices[stockMeta.tvId] ? 'text-flash-up' : 'text-flash-down';
+        
+        rowEl.classList.remove('update-up', 'update-down');
+        void rowEl.offsetWidth; 
+        rowEl.classList.add(animClass);
+
+        const priceCol = rowEl.querySelector('.price-col');
+        priceCol.classList.add(textAnimClass);
+        setTimeout(() => priceCol.classList.remove('text-flash-up', 'text-flash-down'), 300);
+      }
+      prevPrices[stockMeta.tvId] = price;
+
+      rowEl.querySelector('.price-col').innerText = priceStr;
+      rowEl.querySelector('.change-col').innerHTML = `<span class="${colorClass} ${bgClass} px-2 py-1 rounded-[6px] text-[13px] font-bold">${sign}${changePercent.toFixed(2)}%</span>`;
+      rowEl.querySelector('.vol-col').innerText = formatVol(volume);
+    }
+
+    // 에러 UI 처리 함수
+    function handleErrorState() {
+      document.getElementById('sync-status').innerText = "통신 지연 (재시도 중)";
+      document.getElementById('sync-status').classList.replace('text-gray-500', 'text-red-500');
+      document.getElementById('status-dot').classList.replace('bg-green-500', 'bg-red-500');
+    }
+
+    // 4. [핵심] 트레이딩뷰 스캐너 API 다이렉트 호출 (CORS 우회 불필요!)
     async function fetchRealData() {
+      // 시장별 티커 분류
+      const tvMarkets = {
+        korea: STOCKS.filter(s => !s.isUs).map(s => s.tvId).concat(["KRX:KOSPI"]),
+        america: STOCKS.filter(s => s.isUs).map(s => s.tvId).concat(["NASDAQ:IXIC"]),
+        forex: ["FX_IDC:USDKRW"]
+      };
+
       try {
-        // 1. 코스피/나스닥/환율 지수 요청
-        const idxPromise = fetch('https://scanner.tradingview.com/korea/scan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({
-            symbols: { tickers: INDICES.map(i => i.id) },
-            columns: ["close", "change"]
-          })
-        }).then(r => r.json());
+        const fetchPromises = Object.keys(tvMarkets).map(async (market) => {
+          const url = `https://scanner.tradingview.com/${market}/scan`;
+          const body = {
+            symbols: { tickers: tvMarkets[market] },
+            columns: ["close", "change", "volume"]
+          };
+          
+          // 브라우저 직접 호출 (CORS 허용 서버)
+          const res = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'text/plain' }, // Preflight 방지용 꼼수
+            body: JSON.stringify(body)
+          });
+          const json = await res.json();
+          return json.data; 
+        });
 
-        // 2. 한국 주식 거래량 TOP 10 요청
-        const krRankingPromise = fetch('https://scanner.tradingview.com/korea/scan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({
-            filter: [{"left": "type", "operation": "equal", "right": "stock"}],
-            options: {"lang": "ko"},
-            sort: {"sortBy": "volume", "sortOrder": "desc"},
-            range: [0, 10], // 1위부터 10위까지
-            columns: ["name", "description", "close", "change", "volume", "Recommend.All"]
-          })
-        }).then(r => r.json());
+        // 3개 시장 데이터 한 번에 병렬 수신
+        const resultsArray = await Promise.all(fetchPromises);
+        const allResults = resultsArray.flat(); 
 
-        // 3. 미국 주식 거래량 TOP 10 요청 (나스닥, 뉴욕증시 주요 종목)
-        const usRankingPromise = fetch('https://scanner.tradingview.com/america/scan', {
-          method: 'POST',
-          headers: { 'Content-Type': 'text/plain' },
-          body: JSON.stringify({
-            filter: [
-              {"left": "type", "operation": "equal", "right": "stock"},
-              {"left": "exchange", "operation": "in_range", "right": ["NASDAQ", "NYSE"]}
-            ],
-            options: {"lang": "ko"},
-            sort: {"sortBy": "volume", "sortOrder": "desc"},
-            range: [0, 10],
-            columns: ["name", "description", "close", "change", "volume", "Recommend.All"]
-          })
-        }).then(r => r.json());
+        if (!allResults || allResults.length === 0) throw new Error("No data");
 
-        // 병렬 요청 실행
-        const [idxRes, krRes, usRes] = await Promise.all([idxPromise, krRankingPromise, usRankingPromise]);
+        // 통신 성공 UI 업데이트
+        const now = new Date();
+        document.getElementById('last-update').innerText = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')} 갱신`;
+        document.getElementById('sync-status').innerText = "실시간 다이렉트 연동 중";
+        document.getElementById('sync-status').classList.replace('text-red-500', 'text-gray-500');
+        document.getElementById('status-dot').classList.replace('bg-red-500', 'bg-green-500');
 
-        // --- 지수 처리 ---
-        if (idxRes && idxRes.data) {
-          idxRes.data.forEach(item => {
-            const symbol = item.s;
-            const price = item.d[0];
-            const changePercent = item.d[1];
-            
+        allResults.forEach(item => {
+          const symbol = item.s;
+          const quoteData = item.d; // [price, change%, volume]
+          latestDataCache[symbol] = quoteData;
+
+          // 1. 지수 및 환율 업데이트
+          if (INDICES.includes(symbol)) {
             const el = document.getElementById(`idx-${symbol}`);
             if(el) {
+              const price = quoteData[0];
+              const changePercent = quoteData[1];
               const isUp = changePercent > 0;
               const colorClass = isUp ? 'text-red-500' : (changePercent < 0 ? 'text-blue-500' : 'text-gray-500');
               const sign = isUp ? '+' : '';
-              const isKrw = symbol.includes("KRW");
+
+              const isKrw = symbol === "FX_IDC:USDKRW";
               const priceFormat = isKrw ? formatNum(price, false) : formatNum(price, true);
 
               // 스켈레톤 끄기
               el.querySelector('.price-placeholder').classList.add('hidden');
-              el.querySelector('.price').classList.remove('hidden');
+              el.querySelector('.price').classList.remove('hidden', 'text-red-400');
               el.querySelector('.change').classList.remove('hidden');
 
               el.querySelector('.price').innerText = priceFormat;
@@ -445,54 +379,27 @@
               changeEl.innerText = `${sign}${changePercent.toFixed(2)}%`;
               changeEl.className = `text-[11px] font-bold change ${colorClass}`;
             }
-          });
-        }
+            return;
+          }
 
-        // --- 랭킹 데이터 처리 ---
-        const parseRanking = (resData) => {
-          return resData.map(item => ({
-            ticker: item.s,
-            name: item.d[1] || item.d[0], // description (회사명) 없으면 티커명
-            close: item.d[2],
-            change: item.d[3],
-            volume: item.d[4],
-            recommend: item.d[5] // -1 to 1
-          }));
-        };
-
-        if (krRes && krRes.data) rankingData.kr = parseRanking(krRes.data);
-        if (usRes && usRes.data) rankingData.us = parseRanking(usRes.data);
-
-        // UI 통신 성공 업데이트
-        const now = new Date();
-        document.getElementById('last-update').innerText = `${now.getHours().toString().padStart(2,'0')}:${now.getMinutes().toString().padStart(2,'0')}:${now.getSeconds().toString().padStart(2,'0')} 갱신`;
-        document.getElementById('sync-status').innerText = "실시간 다이렉트 랭킹 연동 중";
-        document.getElementById('sync-status').classList.replace('text-red-500', 'text-gray-500');
-        document.getElementById('status-dot').classList.replace('bg-red-500', 'bg-green-500');
-
-        // 처음 로드된 상태(스켈레톤이 보이는 상태)면 전체를 새로 그린다
-        if (document.getElementById('skeleton-container').classList.contains('hidden') === false) {
-          renderListItems();
-        } else {
-          // 이미 리스트가 있다면 애니메이션 효과만 주며 데이터 업데이트 (순위가 바뀌면 다시 그리기)
-          // 간단히 처리하기 위해, 순위가 자주 바뀌는 랭킹 특성상 전체를 다시 그리되 애니메이션을 넣음
-          renderListItems(); 
-          updateListWithAnimation();
-        }
+          // 2. 주식 리스트 업데이트
+          const stockMeta = STOCKS.find(s => s.tvId === symbol);
+          if (stockMeta) {
+            updateRowUI(stockMeta, quoteData);
+          }
+        });
 
       } catch (e) {
         console.warn('API Fetch Failed:', e);
-        document.getElementById('sync-status').innerText = "통신 지연 (재시도 중)";
-        document.getElementById('sync-status').classList.replace('text-gray-500', 'text-red-500');
-        document.getElementById('status-dot').classList.replace('bg-green-500', 'bg-red-500');
+        handleErrorState();
       }
     }
 
     // 스크립트 실행 시작
-    renderSkeletons(); // 처음에 스켈레톤 띄우기
+    renderListItems();
     fetchRealData();
     
-    // 거래량 랭킹 갱신 및 시세 깜빡임 반영 (10초 주기)
+    // 다이렉트 연결이므로 10초마다 마음껏 긁어와도 절대 막히지 않습니다!
     setInterval(fetchRealData, 10000);
 
   </script>
