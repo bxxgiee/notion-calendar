@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html>
 <head>
@@ -6,200 +5,70 @@
 
 <style>
 
-*{
-box-sizing:border-box;
-}
-
 body{
 margin:0;
-height:100vh;
 display:flex;
 justify-content:center;
 align-items:center;
+height:100vh;
 background:transparent;
-font-family:-apple-system,BlinkMacSystemFont,system-ui;
+font-family:system-ui;
 }
 
-/* 카드 */
+.card{
 
-.widget{
-
-width:300px;
+width:260px;
 padding:18px;
-border-radius:26px;
+border-radius:24px;
 
-background:linear-gradient(145deg,#ffd9e2,#ffeaf0);
+background:var(--theme,#ffd9e2);
 
 box-shadow:
-0 20px 40px rgba(0,0,0,.12),
+0 12px 25px rgba(0,0,0,.15),
 inset 0 0 0 3px rgba(255,255,255,.5);
-
-position:relative;
-
-transition:all .3s;
 
 }
 
-/* 상단 */
-
-.topbar{
+.top{
 
 display:flex;
 justify-content:space-between;
-align-items:center;
 
 font-size:12px;
 font-weight:600;
-letter-spacing:1px;
+color:#e18a9c;
 
-color:#e394a4;
-
-margin-bottom:12px;
+margin-bottom:10px;
 
 }
-
-/* 화면 */
 
 .screen{
 
-background:linear-gradient(#eef1f4,#f9fafb);
-
+background:#f1f3f5;
 border-radius:16px;
-padding:22px;
 
-box-shadow:
-inset 0 6px 8px rgba(0,0,0,.06),
-inset 0 -6px 8px rgba(255,255,255,.8);
-
+padding:20px;
 text-align:center;
 
-}
+box-shadow:
+inset 0 6px 8px rgba(0,0,0,.05),
+inset 0 -6px 8px rgba(255,255,255,.7);
 
-/* 시간 */
+}
 
 .time{
 
 font-family:monospace;
-font-size:56px;
+font-size:50px;
 letter-spacing:3px;
 color:#666;
 
 }
 
-/* AMPM */
-
 .ampm{
 
-font-size:16px;
-color:#ff9eb4;
-margin-left:6px;
-
-}
-
-/* 설정 버튼 */
-
-.settings{
-
-position:absolute;
-top:14px;
-right:16px;
-
-cursor:pointer;
-font-size:18px;
-
-transition:.2s;
-
-}
-
-.settings:hover{
-
-transform:rotate(20deg) scale(1.1);
-
-}
-
-/* 설정 패널 */
-
-.panel{
-
-position:absolute;
-
-top:110%;
-left:50%;
-
-transform:translateX(-50%);
-
-width:230px;
-
-background:white;
-
-border-radius:16px;
-
-padding:14px;
-
-box-shadow:0 18px 40px rgba(0,0,0,.15);
-
-display:none;
-
-animation:pop .2s ease;
-
-}
-
-@keyframes pop{
-
-from{transform:translate(-50%,10px);opacity:0}
-to{transform:translate(-50%,0);opacity:1}
-
-}
-
-/* 제목 */
-
-.panel h4{
-
-margin:0 0 8px;
-font-size:12px;
-color:#999;
-
-}
-
-/* 컬러 팔레트 */
-
-.palette{
-
-width:30px;
-height:30px;
-
-border-radius:8px;
-
-display:inline-block;
-margin:4px;
-
-cursor:pointer;
-
-border:2px solid white;
-
-box-shadow:0 3px 8px rgba(0,0,0,.1);
-
-transition:.2s;
-
-}
-
-.palette:hover{
-
-transform:scale(1.15);
-
-}
-
-/* 링크 */
-
-.embed{
-
-width:100%;
-margin-top:10px;
-font-size:10px;
-
-border:1px solid #eee;
-border-radius:6px;
-padding:4px;
+font-size:14px;
+color:#ff9fb3;
 
 }
 
@@ -209,37 +78,17 @@ padding:4px;
 
 <body>
 
-<div class="widget" id="widget">
+<div class="card">
 
-<div class="settings" onclick="togglePanel()">⚙</div>
-
-<div class="topbar">
-
+<div class="top">
 <span id="date"></span>
-
 <span>•••</span>
-
 </div>
 
 <div class="screen">
 
 <span class="time" id="time"></span>
-
 <span class="ampm" id="ampm"></span>
-
-</div>
-
-<div class="panel" id="panel">
-
-<h4>Theme</h4>
-
-<div class="palette" style="background:#ffd9e2" onclick="setTheme('#ffd9e2')"></div>
-<div class="palette" style="background:#ffe9c7" onclick="setTheme('#ffe9c7')"></div>
-<div class="palette" style="background:#dff6ff" onclick="setTheme('#dff6ff')"></div>
-<div class="palette" style="background:#e6ffe9" onclick="setTheme('#e6ffe9')"></div>
-<div class="palette" style="background:#ece7ff" onclick="setTheme('#ece7ff')"></div>
-
-<input class="embed" id="embedlink" readonly>
 
 </div>
 
@@ -247,20 +96,16 @@ padding:4px;
 
 <script>
 
-/* URL 설정 불러오기 */
-
 const params=new URLSearchParams(window.location.search)
 const theme=params.get("theme")
 
 if(theme){
 
-document.getElementById("widget").style.background=theme
+document.querySelector(".card").style.background=theme
 
 }
 
-/* 시계 */
-
-function updateClock(){
+function clock(){
 
 const now=new Date()
 
@@ -274,42 +119,16 @@ h=h?h:12
 
 m=m<10?"0"+m:m
 
-document.getElementById("time").innerText=h+":"+m
-document.getElementById("ampm").innerText=ampm
+time.innerText=h+":"+m
+ampm.innerText=" "+ampm
 
-const options={month:"short",day:"numeric",weekday:"short"}
-
-document.getElementById("date").innerText=
-now.toLocaleDateString("en-US",options).toUpperCase()
+date.innerText=
+now.toLocaleDateString("en-US",{month:"short",day:"numeric",weekday:"short"}).toUpperCase()
 
 }
 
-setInterval(updateClock,1000)
-updateClock()
-
-/* 설정 패널 */
-
-function togglePanel(){
-
-const p=document.getElementById("panel")
-
-p.style.display=p.style.display==="block"?"none":"block"
-
-}
-
-/* 테마 변경 */
-
-function setTheme(c){
-
-document.getElementById("widget").style.background=c
-
-const base=window.location.origin+window.location.pathname
-
-const url=base+"?theme="+encodeURIComponent(c)
-
-document.getElementById("embedlink").value=url
-
-}
+setInterval(clock,1000)
+clock()
 
 </script>
 
