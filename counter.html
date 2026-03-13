@@ -4,968 +4,627 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>🧶 단수 카운터</title>
-<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Nanum+Myeongjo:wght@400;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css" rel="stylesheet">
 <style>
   :root {
-    --bg:       #1A1612;
-    --surface:  #242018;
-    --card:     #2E2820;
-    --border:   #3D3428;
-    --amber:    #D4956A;
-    --amber2:   #E8B48A;
-    --sage:     #7A9E7E;
-    --rose:     #C4796A;
-    --cream:    #F0E6D2;
-    --mid:      #8A7A68;
-    --dim:      #554A3C;
-    --shadow:   rgba(0,0,0,0.5);
+    --bg:       #FAF7F3;
+    --surface:  #FFFFFF;
+    --border:   #E8E0D5;
+    --border2:  #D4C9BA;
+    --amber:    #C8845A;
+    --amber-lt: #F5E6D8;
+    --amber-dk: #A86A42;
+    --sage:     #6A9E72;
+    --sage-lt:  #E0EFE2;
+    --rose:     #C06060;
+    --rose-lt:  #F5E0E0;
+    --ink:      #2A2018;
+    --ink2:     #5A4E40;
+    --ink3:     #9A8C7C;
+    --ink4:     #C4B8A8;
   }
 
   * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 
   body {
     background: var(--bg);
-    background-image:
-      radial-gradient(ellipse at 20% 0%, rgba(212,149,106,0.08) 0%, transparent 50%),
-      radial-gradient(ellipse at 80% 100%, rgba(122,158,126,0.06) 0%, transparent 50%);
     min-height: 100vh;
-    font-family: 'Nanum Myeongjo', serif;
-    color: var(--cream);
-    padding: 0 0 80px;
-    overflow-x: hidden;
+    font-family: 'Pretendard', -apple-system, sans-serif;
+    color: var(--ink);
+    padding-bottom: 48px;
   }
 
-  /* ── HEADER ── */
+  /* HEADER */
   .header {
-    padding: 24px 20px 16px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+    background: var(--surface);
     border-bottom: 1px solid var(--border);
-  }
-
-  .logo {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.6rem;
-    letter-spacing: 2px;
-    color: var(--amber);
+    padding: 16px 20px;
     display: flex;
     align-items: center;
-    gap: 8px;
+    gap: 10px;
+    position: sticky; top: 0; z-index: 10;
   }
-
-  .logo span { font-size: 1.2rem; }
-
-  .header-btn {
-    background: var(--card);
-    border: 1px solid var(--border);
-    color: var(--mid);
-    padding: 8px 14px;
-    border-radius: 8px;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.75rem;
-    cursor: pointer;
-    transition: all 0.2s;
+  .logo-box {
+    width: 34px; height: 34px;
+    background: var(--amber-lt);
+    border-radius: 9px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.1rem;
   }
+  .logo-text { font-size: 1rem; font-weight: 700; letter-spacing: -0.3px; }
 
-  .header-btn:hover { border-color: var(--amber); color: var(--amber); }
-
-  /* ── PROJECT TABS ── */
-  .tabs-wrap {
-    padding: 16px 20px 0;
+  /* TABS */
+  .tabs-row {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 10px 16px;
     display: flex;
-    gap: 8px;
+    align-items: center;
+    gap: 7px;
     overflow-x: auto;
     scrollbar-width: none;
-    -ms-overflow-style: none;
   }
-  .tabs-wrap::-webkit-scrollbar { display: none; }
+  .tabs-row::-webkit-scrollbar { display: none; }
 
   .tab {
     flex-shrink: 0;
-    padding: 8px 16px;
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 20px;
-    font-family: 'Nanum Myeongjo', serif;
+    padding: 6px 14px;
+    border-radius: 99px;
     font-size: 0.82rem;
-    color: var(--mid);
+    font-weight: 500;
     cursor: pointer;
-    transition: all 0.2s;
+    border: 1.5px solid var(--border);
+    background: transparent;
+    color: var(--ink2);
     white-space: nowrap;
     position: relative;
+    transition: all 0.15s;
+    user-select: none;
   }
-
   .tab.active {
     background: var(--amber);
     border-color: var(--amber);
-    color: var(--bg);
+    color: #fff;
     font-weight: 700;
+    box-shadow: 0 2px 8px rgba(200,132,90,0.3);
   }
-
-  .tab .del-tab {
+  .tab-x {
     display: none;
     position: absolute;
-    top: -6px; right: -6px;
-    width: 16px; height: 16px;
+    top: -7px; right: -7px;
+    width: 17px; height: 17px;
     background: var(--rose);
+    border: 2px solid var(--bg);
     border-radius: 50%;
-    font-size: 0.6rem;
+    font-size: 0.58rem;
+    font-weight: 700;
+    color: #fff;
     align-items: center;
     justify-content: center;
-    color: white;
     cursor: pointer;
+    z-index: 2;
   }
+  .tab:hover .tab-x { display: flex; }
 
-  .tab:hover .del-tab { display: flex; }
-
-  .tab-add {
+  .btn-add-tab {
     flex-shrink: 0;
-    padding: 8px 14px;
-    background: transparent;
-    border: 1.5px dashed var(--border);
-    border-radius: 20px;
-    color: var(--dim);
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    border: 1.5px dashed var(--border2);
+    background: none;
+    color: var(--ink3);
+    font-size: 1rem;
     cursor: pointer;
-    font-size: 1.1rem;
-    transition: all 0.2s;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.15s;
   }
+  .btn-add-tab:hover { border-color: var(--amber); color: var(--amber); }
 
-  .tab-add:hover { border-color: var(--amber); color: var(--amber); }
-
-  /* ── MAIN COUNTER CARD ── */
-  .counter-card {
-    margin: 20px 20px 0;
-    background: var(--card);
-    border: 1.5px solid var(--border);
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 8px 40px var(--shadow);
-  }
-
-  /* 프로젝트 이름 */
-  .project-name-wrap {
-    padding: 20px 24px 12px;
+  /* MAIN */
+  .main {
+    padding: 18px 16px;
+    max-width: 480px;
+    margin: 0 auto;
     display: flex;
-    align-items: center;
-    gap: 10px;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  /* CARD */
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    overflow: hidden;
+    box-shadow: 0 1px 6px rgba(42,32,24,0.06);
+  }
+
+  /* 이름 행 */
+  .name-row {
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 10px;
     border-bottom: 1px solid var(--border);
   }
-
-  .project-name {
-    font-family: 'Nanum Myeongjo', serif;
-    font-size: 1.1rem;
-    font-weight: 700;
-    color: var(--cream);
-    background: none;
-    border: none;
-    outline: none;
+  .name-inp {
     flex: 1;
-    cursor: text;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 1rem; font-weight: 700;
+    color: var(--ink);
+    background: none; border: none; outline: none;
   }
+  .name-inp::placeholder { color: var(--ink4); font-weight: 400; }
 
-  .project-name::placeholder { color: var(--dim); }
-
-  .parity-badge {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    padding: 4px 10px;
-    border-radius: 20px;
-    font-weight: 500;
-    transition: all 0.3s;
+  .parity-pill {
+    font-size: 0.71rem; font-weight: 600;
+    padding: 4px 9px; border-radius: 99px;
+    white-space: nowrap; transition: all 0.2s;
   }
+  .parity-pill.odd  { background: var(--amber-lt); color: var(--amber-dk); }
+  .parity-pill.even { background: var(--sage-lt);  color: var(--sage); }
 
-  .parity-badge.odd  { background: rgba(212,149,106,0.15); color: var(--amber); border: 1px solid rgba(212,149,106,0.3); }
-  .parity-badge.even { background: rgba(122,158,126,0.15); color: var(--sage);  border: 1px solid rgba(122,158,126,0.3); }
-
-  /* 큰 숫자 */
-  .count-display {
+  /* 숫자 */
+  .count-area {
+    padding: 26px 16px 18px;
     text-align: center;
-    padding: 32px 24px 20px;
-    position: relative;
   }
+  .count-lbl {
+    font-size: 0.72rem; font-weight: 600;
+    color: var(--ink3); letter-spacing: 1.2px;
+    text-transform: uppercase; margin-bottom: 4px;
+  }
+  .count-num {
+    display: block;
+    font-size: 6.5rem; font-weight: 800; line-height: 1;
+    color: var(--ink); letter-spacing: -5px;
+    transition: transform 0.1s, color 0.15s;
+  }
+  .count-num.bump { transform: scale(1.1); color: var(--amber); }
+  .count-num.dip  { transform: scale(0.93); color: var(--rose); }
 
-  .count-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.7rem;
-    color: var(--mid);
-    letter-spacing: 2px;
-    text-transform: uppercase;
+  /* 목표 */
+  .goal-area { padding: 0 16px 16px; }
+  .goal-top {
+    display: flex; align-items: center; gap: 8px;
     margin-bottom: 8px;
   }
-
-  .count-number {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 8rem;
-    line-height: 1;
-    color: var(--cream);
-    transition: transform 0.08s ease, color 0.15s;
-    display: block;
-    letter-spacing: 4px;
-  }
-
-  .count-number.bump {
-    transform: scale(1.08);
-    color: var(--amber2);
-  }
-
-  .count-number.down {
-    transform: scale(0.95);
-    color: var(--rose);
-  }
-
-  /* 목표 진행률 */
-  .goal-section {
-    padding: 0 24px 20px;
-  }
-
-  .goal-row {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    margin-bottom: 10px;
-  }
-
-  .goal-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.72rem;
-    color: var(--mid);
-    white-space: nowrap;
-  }
-
-  .goal-input {
-    width: 70px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 6px;
-    padding: 5px 8px;
-    font-family: 'DM Mono', monospace;
-    font-size: 0.82rem;
-    color: var(--cream);
-    outline: none;
-    text-align: center;
+  .goal-lbl { font-size: 0.78rem; font-weight: 500; color: var(--ink3); }
+  .goal-inp {
+    width: 68px; padding: 5px 8px;
+    border: 1.5px solid var(--border); border-radius: 8px;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 0.85rem; font-weight: 600; color: var(--ink);
+    background: var(--bg); outline: none; text-align: center;
     transition: border-color 0.2s;
   }
+  .goal-inp:focus { border-color: var(--amber); }
+  .goal-pct { margin-left: auto; font-size: 0.88rem; font-weight: 700; color: var(--amber); }
 
-  .goal-input:focus { border-color: var(--amber); }
-
-  .goal-pct {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.1rem;
-    color: var(--amber);
-    margin-left: auto;
-    letter-spacing: 1px;
-  }
-
-  .progress-track {
-    height: 6px;
-    background: var(--surface);
-    border-radius: 100px;
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--amber), var(--amber2));
-    border-radius: 100px;
-    width: 0%;
+  .bar-track { height: 6px; background: var(--border); border-radius: 99px; overflow: hidden; }
+  .bar-fill {
+    height: 100%; border-radius: 99px; width: 0%;
+    background: linear-gradient(90deg, var(--amber), #E8A878);
     transition: width 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   }
+  .bar-fill.done { background: linear-gradient(90deg, var(--sage), #8EC494); }
 
-  .progress-fill.done {
-    background: linear-gradient(90deg, var(--sage), #A8D4AC);
-  }
-
-  /* 메인 버튼들 */
-  .btn-row-main {
+  /* 버튼 */
+  .btn-grid {
+    padding: 0 14px 16px;
     display: grid;
-    grid-template-columns: 1fr 2fr 1fr;
-    gap: 12px;
-    padding: 0 20px 20px;
+    grid-template-columns: 54px 1fr 54px;
+    gap: 10px;
   }
-
   .btn-side {
-    background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 14px;
-    color: var(--mid);
-    font-family: 'DM Mono', monospace;
-    font-size: 1.4rem;
-    cursor: pointer;
-    padding: 18px 0;
-    transition: all 0.15s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    user-select: none;
+    height: 62px; border-radius: 13px;
+    background: var(--bg); border: 1.5px solid var(--border);
+    font-size: 1.4rem; color: var(--ink3); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.14s;
   }
-
   .btn-side:hover { border-color: var(--amber); color: var(--amber); }
-  .btn-side:active { transform: scale(0.94); }
+  .btn-side:active { transform: scale(0.92); }
 
   .btn-main {
-    background: var(--amber);
-    border: none;
-    border-radius: 16px;
-    color: var(--bg);
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2rem;
-    letter-spacing: 2px;
-    cursor: pointer;
-    padding: 22px 0;
-    transition: all 0.12s;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 2px;
-    user-select: none;
-    box-shadow: 0 4px 20px rgba(212,149,106,0.35);
-    position: relative;
-    overflow: hidden;
+    height: 62px; border-radius: 13px;
+    background: var(--amber); border: none; cursor: pointer;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center; gap: 1px;
+    box-shadow: 0 3px 12px rgba(200,132,90,0.32);
+    transition: all 0.12s; user-select: none;
   }
-
-  .btn-main::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(circle at center, rgba(255,255,255,0.2), transparent 60%);
-    opacity: 0;
-    transition: opacity 0.2s;
-  }
-
-  .btn-main:active::after { opacity: 1; }
-  .btn-main:active { transform: scale(0.96); box-shadow: 0 2px 10px rgba(212,149,106,0.25); }
-
-  .btn-main-sub {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.65rem;
-    letter-spacing: 1px;
-    opacity: 0.7;
-  }
+  .btn-main:active { transform: scale(0.97); box-shadow: 0 1px 5px rgba(200,132,90,0.2); }
+  .btn-main-t { font-size: 1rem; font-weight: 800; color: #fff; }
+  .btn-main-s { font-size: 0.62rem; font-weight: 500; color: rgba(255,255,255,0.75); letter-spacing: 0.8px; }
 
   /* 메모 */
-  .memo-section {
-    margin: 0 20px 0;
-    padding: 14px 16px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-  }
-
-  .memo-label {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.68rem;
-    color: var(--mid);
-    letter-spacing: 1px;
+  .memo-lbl {
+    padding: 12px 16px 8px;
+    font-size: 0.72rem; font-weight: 600;
+    color: var(--ink3); letter-spacing: 0.8px;
     text-transform: uppercase;
-    margin-bottom: 8px;
-    display: flex;
-    align-items: center;
-    gap: 6px;
+    border-bottom: 1px solid var(--border);
   }
-
-  .memo-input {
-    width: 100%;
-    background: none;
-    border: none;
-    outline: none;
-    font-family: 'Nanum Myeongjo', serif;
-    font-size: 0.85rem;
-    color: var(--cream);
-    resize: none;
-    line-height: 1.6;
-    min-height: 48px;
+  .memo-inp {
+    width: 100%; padding: 10px 16px;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 0.88rem; color: var(--ink);
+    background: none; border: none; outline: none;
+    resize: none; line-height: 1.7;
   }
-
-  .memo-input::placeholder { color: var(--dim); }
+  .memo-inp::placeholder { color: var(--ink4); }
 
   /* 히스토리 */
-  .history-section {
-    margin: 16px 20px 0;
-  }
-
-  .history-title {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.68rem;
-    color: var(--mid);
-    letter-spacing: 2px;
+  .hist-lbl {
+    padding: 12px 16px;
+    font-size: 0.72rem; font-weight: 600;
+    color: var(--ink3); letter-spacing: 0.8px;
     text-transform: uppercase;
-    margin-bottom: 10px;
-    padding: 0 4px;
+    border-bottom: 1px solid var(--border);
   }
-
-  .history-list {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
+  .hist-empty {
+    padding: 20px 16px;
+    font-size: 0.82rem; color: var(--ink4);
+    text-align: center; line-height: 1.8;
   }
-
-  .history-item {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    padding: 10px 14px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 10px;
-    font-size: 0.8rem;
-    animation: slideIn 0.2s ease;
+  .hist-item {
+    padding: 10px 16px;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid var(--border);
+    animation: popIn 0.18s ease;
   }
-
-  @keyframes slideIn {
-    from { opacity: 0; transform: translateX(-10px); }
-    to   { opacity: 1; transform: translateX(0); }
+  .hist-item:last-child { border-bottom: none; }
+  @keyframes popIn {
+    from { opacity: 0; transform: translateY(-3px); }
+    to   { opacity: 1; transform: translateY(0); }
   }
-
-  .history-dot {
-    width: 7px; height: 7px;
-    border-radius: 50%;
-    flex-shrink: 0;
+  .hist-ico {
+    width: 28px; height: 28px; border-radius: 8px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.78rem; flex-shrink: 0;
   }
-
-  .history-dot.up   { background: var(--amber); }
-  .history-dot.down { background: var(--rose); }
-
-  .history-row {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1rem;
-    color: var(--cream);
-    letter-spacing: 1px;
+  .hist-ico.up   { background: var(--amber-lt); color: var(--amber-dk); }
+  .hist-ico.down { background: var(--rose-lt);  color: var(--rose); }
+  .hist-row { font-size: 0.9rem; font-weight: 700; color: var(--ink); }
+  .hist-pill {
+    font-size: 0.65rem; font-weight: 600;
+    padding: 2px 7px; border-radius: 99px; margin-left: 6px;
   }
-
-  .history-time {
-    font-family: 'DM Mono', monospace;
-    font-size: 0.68rem;
-    color: var(--dim);
-    margin-left: auto;
+  .hist-pill.odd  { background: var(--amber-lt); color: var(--amber-dk); }
+  .hist-pill.even { background: var(--sage-lt);  color: var(--sage); }
+  .hist-time {
+    margin-left: auto; font-size: 0.7rem; color: var(--ink4);
+    white-space: nowrap; flex-shrink: 0;
   }
-
-  /* 알림 토스트 */
-  .toast {
-    position: fixed;
-    bottom: 24px; left: 50%;
-    transform: translateX(-50%) translateY(80px);
-    background: var(--amber);
-    color: var(--bg);
-    padding: 12px 24px;
-    border-radius: 100px;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1rem;
-    letter-spacing: 1px;
-    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-    z-index: 999;
-    white-space: nowrap;
-    box-shadow: 0 4px 20px rgba(212,149,106,0.4);
-  }
-
-  .toast.show { transform: translateX(-50%) translateY(0); }
 
   /* 완료 오버레이 */
-  .done-overlay {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(26,22,18,0.92);
-    z-index: 100;
-    align-items: center;
-    justify-content: center;
-    flex-direction: column;
-    gap: 16px;
-    animation: fadeIn 0.3s ease;
+  .done-ov {
+    display: none; position: fixed; inset: 0;
+    background: rgba(250,247,243,0.96);
+    z-index: 100; flex-direction: column;
+    align-items: center; justify-content: center; gap: 12px;
+    animation: fadeIn 0.25s ease;
   }
-
-  .done-overlay.show { display: flex; }
-
+  .done-ov.show { display: flex; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-  .done-emoji {
-    font-size: 5rem;
-    animation: bounce 0.6s ease infinite alternate;
-  }
-
-  @keyframes bounce {
-    from { transform: translateY(0); }
-    to   { transform: translateY(-12px); }
-  }
-
-  .done-text {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 2.5rem;
-    color: var(--amber);
-    letter-spacing: 3px;
-    text-align: center;
-  }
-
-  .done-sub {
-    font-size: 0.9rem;
-    color: var(--mid);
-    text-align: center;
-  }
-
-  .done-close {
-    margin-top: 8px;
-    background: var(--amber);
-    border: none;
-    border-radius: 100px;
-    color: var(--bg);
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.1rem;
-    letter-spacing: 1px;
-    padding: 14px 40px;
-    cursor: pointer;
+  .done-emoji { font-size: 5rem; animation: bob 0.7s ease-in-out infinite alternate; }
+  @keyframes bob { to { transform: translateY(-12px); } }
+  .done-title { font-size: 1.7rem; font-weight: 800; color: var(--amber); }
+  .done-desc  { font-size: 0.9rem; color: var(--ink3); text-align: center; }
+  .done-btn {
+    margin-top: 6px; padding: 14px 40px;
+    background: var(--amber); border: none; border-radius: 99px;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 1rem; font-weight: 700; color: #fff; cursor: pointer;
+    box-shadow: 0 3px 14px rgba(200,132,90,0.32);
   }
 
   /* 모달 */
   .modal-bg {
-    display: none;
-    position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.7);
-    z-index: 200;
-    align-items: flex-end;
-    justify-content: center;
+    display: none; position: fixed; inset: 0;
+    background: rgba(42,32,24,0.45);
+    z-index: 200; align-items: flex-end; justify-content: center;
   }
-
   .modal-bg.show { display: flex; }
-
   .modal {
-    background: var(--card);
-    border: 1.5px solid var(--border);
-    border-radius: 20px 20px 0 0;
-    padding: 28px 24px 40px;
-    width: 100%;
-    max-width: 500px;
-    animation: slideUp 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-
-  @keyframes slideUp {
-    from { transform: translateY(100%); }
-    to   { transform: translateY(0); }
-  }
-
-  .modal-title {
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.4rem;
-    color: var(--amber);
-    letter-spacing: 2px;
-    margin-bottom: 20px;
-  }
-
-  .modal-input {
-    width: 100%;
     background: var(--surface);
-    border: 1.5px solid var(--border);
-    border-radius: 10px;
-    padding: 14px 16px;
-    font-family: 'Nanum Myeongjo', serif;
-    font-size: 1rem;
-    color: var(--cream);
-    outline: none;
-    margin-bottom: 14px;
-    transition: border-color 0.2s;
+    border-radius: 20px 20px 0 0;
+    padding: 24px 20px 40px;
+    width: 100%; max-width: 480px;
+    animation: slideUp 0.26s cubic-bezier(0.34, 1.3, 0.64, 1);
+  }
+  @keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }
+  .modal-title { font-size: 1.05rem; font-weight: 800; margin-bottom: 16px; }
+  .modal-inp {
+    width: 100%; padding: 13px 15px;
+    border: 1.5px solid var(--border); border-radius: 11px;
+    font-family: 'Pretendard', sans-serif; font-size: 1rem; color: var(--ink);
+    outline: none; margin-bottom: 12px; transition: border-color 0.2s;
+  }
+  .modal-inp:focus { border-color: var(--amber); }
+  .modal-ok {
+    width: 100%; padding: 15px;
+    background: var(--amber); border: none; border-radius: 11px;
+    font-family: 'Pretendard', sans-serif;
+    font-size: 1rem; font-weight: 700; color: #fff; cursor: pointer;
+  }
+  .modal-no {
+    width: 100%; padding: 13px; margin-top: 8px;
+    background: none; border: 1.5px solid var(--border); border-radius: 11px;
+    font-family: 'Pretendard', sans-serif; font-size: 0.95rem;
+    font-weight: 500; color: var(--ink3); cursor: pointer;
   }
 
-  .modal-input:focus { border-color: var(--amber); }
-
-  .modal-btn {
-    width: 100%;
-    background: var(--amber);
-    border: none;
-    border-radius: 12px;
-    padding: 16px;
-    font-family: 'Bebas Neue', sans-serif;
-    font-size: 1.2rem;
-    letter-spacing: 2px;
-    color: var(--bg);
-    cursor: pointer;
-    transition: all 0.15s;
+  /* 토스트 */
+  .toast {
+    position: fixed; bottom: 24px; left: 50%;
+    transform: translateX(-50%) translateY(70px);
+    background: var(--ink); color: #fff;
+    padding: 10px 20px; border-radius: 99px;
+    font-size: 0.84rem; font-weight: 500;
+    transition: transform 0.28s cubic-bezier(0.34, 1.4, 0.64, 1);
+    z-index: 999; white-space: nowrap; pointer-events: none;
   }
+  .toast.show { transform: translateX(-50%) translateY(0); }
 
-  .modal-btn:active { transform: scale(0.98); }
-
-  .modal-cancel {
-    width: 100%;
-    background: none;
-    border: 1.5px solid var(--border);
-    border-radius: 12px;
-    padding: 14px;
-    font-family: 'Nanum Myeongjo', serif;
-    font-size: 0.9rem;
-    color: var(--mid);
-    cursor: pointer;
-    margin-top: 8px;
-  }
-
-  /* 진동 애니메이션 */
-  @keyframes vibrate {
+  @keyframes shake {
     0%,100% { transform: translateX(0); }
-    20%      { transform: translateX(-4px); }
-    40%      { transform: translateX(4px); }
-    60%      { transform: translateX(-4px); }
-    80%      { transform: translateX(4px); }
+    25% { transform: translateX(-6px); }
+    75% { transform: translateX(6px); }
   }
-
-  .vibrate { animation: vibrate 0.3s ease; }
+  .shake { animation: shake 0.26s ease; }
 </style>
 </head>
 <body>
 
-<!-- HEADER -->
 <div class="header">
-  <div class="logo"><span>🧶</span> ROW COUNTER</div>
-  <button class="header-btn" onclick="openAddProject()">+ 새 프로젝트</button>
+  <div class="logo-box">🧶</div>
+  <span class="logo-text">단수 카운터</span>
 </div>
 
-<!-- TABS -->
-<div class="tabs-wrap" id="tabsWrap"></div>
+<div class="tabs-row" id="tabsRow"></div>
 
-<!-- COUNTER CARD -->
-<div class="counter-card" id="counterCard">
-
-  <!-- 프로젝트 이름 -->
-  <div class="project-name-wrap">
-    <input class="project-name" id="projectName" type="text" placeholder="프로젝트 이름..." oninput="saveProject()" />
-    <div class="parity-badge odd" id="parityBadge">홀수단</div>
-  </div>
-
-  <!-- 숫자 -->
-  <div class="count-display">
-    <div class="count-label">현재 단수</div>
-    <span class="count-number" id="countNumber">0</span>
-  </div>
-
-  <!-- 목표 진행률 -->
-  <div class="goal-section">
-    <div class="goal-row">
-      <span class="goal-label">목표 단수</span>
-      <input class="goal-input" id="goalInput" type="number" min="0" placeholder="—" oninput="updateGoal()" />
-      <span class="goal-pct" id="goalPct">—</span>
+<div class="main">
+  <div class="card" id="mainCard">
+    <div class="name-row">
+      <input class="name-inp" id="nameInp" type="text" maxlength="20"
+             placeholder="프로젝트 이름" oninput="onName()" />
+      <span class="parity-pill odd" id="parityPill">홀수단</span>
     </div>
-    <div class="progress-track">
-      <div class="progress-fill" id="progressFill"></div>
+    <div class="count-area">
+      <div class="count-lbl">현재 단수</div>
+      <span class="count-num" id="countNum">0</span>
+    </div>
+    <div class="goal-area">
+      <div class="goal-top">
+        <span class="goal-lbl">목표 단수</span>
+        <input class="goal-inp" id="goalInp" type="number" min="0"
+               placeholder="—" oninput="onGoal()" />
+        <span class="goal-pct" id="goalPct">—</span>
+      </div>
+      <div class="bar-track"><div class="bar-fill" id="barFill"></div></div>
+    </div>
+    <div class="btn-grid">
+      <button class="btn-side" onclick="dec()">−</button>
+      <button class="btn-main" onclick="inc()">
+        <span class="btn-main-t">단수 +1</span>
+        <span class="btn-main-s">TAP TO COUNT</span>
+      </button>
+      <button class="btn-side" onclick="doReset()">↺</button>
     </div>
   </div>
 
-  <!-- 버튼 -->
-  <div class="btn-row-main">
-    <button class="btn-side" onclick="decrement()" title="-1">−</button>
-    <button class="btn-main" id="mainBtn" onclick="increment()">
-      단수 +1
-      <span class="btn-main-sub">TAP TO COUNT</span>
-    </button>
-    <button class="btn-side" onclick="resetConfirm()" title="초기화">↺</button>
+  <div class="card">
+    <div class="memo-lbl">📝 메모</div>
+    <textarea class="memo-inp" id="memoInp" rows="2"
+              placeholder="짝수단은 누르지 않음, 6단마다 무늬 확인…"
+              oninput="onMemo()"></textarea>
   </div>
 
+  <div class="card">
+    <div class="hist-lbl">최근 기록</div>
+    <div id="histList"></div>
+  </div>
 </div>
 
-<!-- 메모 -->
-<div class="memo-section" style="margin-top:16px;">
-  <div class="memo-label">📝 메모</div>
-  <textarea class="memo-input" id="memoInput" placeholder="짝수단은 안 누름, 6단마다 무늬 확인..." rows="2" oninput="saveProject()"></textarea>
-</div>
-
-<!-- 히스토리 -->
-<div class="history-section">
-  <div class="history-title">최근 기록</div>
-  <div class="history-list" id="historyList"></div>
-</div>
-
-<!-- 완료 오버레이 -->
-<div class="done-overlay" id="doneOverlay">
+<!-- 완료 -->
+<div class="done-ov" id="doneOv">
   <div class="done-emoji">🎉</div>
-  <div class="done-text">목표 단수 달성!</div>
-  <div class="done-sub" id="doneSubText"></div>
-  <button class="done-close" onclick="closeDone()">계속 뜨기</button>
+  <div class="done-title">목표 달성!</div>
+  <div class="done-desc" id="doneDesc"></div>
+  <button class="done-btn" onclick="closeDone()">계속 뜨기</button>
 </div>
 
-<!-- 새 프로젝트 모달 -->
+<!-- 추가 모달 -->
 <div class="modal-bg" id="addModal">
   <div class="modal">
     <div class="modal-title">새 프로젝트 추가</div>
-    <input class="modal-input" id="newProjectName" placeholder="프로젝트 이름 (예: 동글 파우치)" maxlength="20" />
-    <button class="modal-btn" onclick="confirmAddProject()">추가하기</button>
-    <button class="modal-cancel" onclick="closeModal()">취소</button>
+    <input class="modal-inp" id="newInp" placeholder="프로젝트 이름" maxlength="20" />
+    <button class="modal-ok" onclick="confirmAdd()">추가하기</button>
+    <button class="modal-no" onclick="closeModal()">취소</button>
   </div>
 </div>
 
-<!-- 토스트 -->
 <div class="toast" id="toast"></div>
 
 <script>
-// ══════════════════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════════════════
-let projects = [];
-let activeIdx = 0;
+const KEY = 'knit_rc_v4';
+let S = { projects: [], active: 0 };
 
-const STORAGE_KEY = 'knitting_row_counter_v2';
-
-// ══════════════════════════════════════════════════════
-// INIT
-// ══════════════════════════════════════════════════════
-window.addEventListener('load', () => {
-  load();
-  if (projects.length === 0) {
-    projects.push(newProject('내 첫 작품'));
-    save();
-  }
-  render();
-});
-
-function newProject(name = '새 프로젝트') {
+function mkP(name) {
   return { name, count: 0, goal: 0, memo: '', history: [] };
 }
 
-// ══════════════════════════════════════════════════════
-// COUNTER
-// ══════════════════════════════════════════════════════
-function increment() {
-  const p = projects[activeIdx];
-  p.count++;
-  addHistory(p, 'up');
-  saveProject();
-  animateNumber('bump');
-  vibrate([30]);
-  updateUI();
+// ── 초기화 ──
+window.addEventListener('load', () => {
+  try { const r = localStorage.getItem(KEY); if (r) S = JSON.parse(r); } catch(e) {}
+  if (!S.projects.length) S.projects.push(mkP('내 첫 작품'));
+  if (S.active >= S.projects.length) S.active = 0;
+  save(); renderAll();
+});
 
-  // 목표 달성 체크
-  if (p.goal > 0 && p.count === p.goal) {
-    setTimeout(() => showDone(p), 300);
+function save() {
+  try { localStorage.setItem(KEY, JSON.stringify(S)); } catch(e) {}
+}
+
+function cur() { return S.projects[S.active]; }
+
+// ── 카운터 ──
+function inc() {
+  const p = cur(); p.count++;
+  pushH(p, 'up'); save(); anim('bump'); buzz([30]); renderCard(); renderHist();
+  if (p.goal > 0 && p.count === p.goal) setTimeout(showDone, 300);
+}
+
+function dec() {
+  const p = cur();
+  if (p.count <= 0) {
+    document.getElementById('mainCard').classList.add('shake');
+    setTimeout(() => document.getElementById('mainCard').classList.remove('shake'), 280);
+    toast('이미 0단이에요!'); return;
   }
+  p.count--; pushH(p, 'down'); save(); anim('dip'); buzz([15]); renderCard(); renderHist();
 }
 
-function decrement() {
-  const p = projects[activeIdx];
-  if (p.count <= 0) { shake(); return; }
-  p.count--;
-  addHistory(p, 'down');
-  saveProject();
-  animateNumber('down');
-  vibrate([15]);
-  updateUI();
+function doReset() {
+  const p = cur(); if (p.count === 0) return;
+  if (!confirm(`"${p.name}"의 단수를 0으로 초기화할까요?`)) return;
+  p.count = 0; p.history = []; save(); renderCard(); renderHist(); toast('↺ 초기화됐어요');
 }
 
-function addHistory(p, dir) {
-  const now = new Date();
-  const time = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  p.history.unshift({ row: p.count, dir, time });
-  if (p.history.length > 10) p.history.pop();
+function pushH(p, dir) {
+  const n = new Date();
+  const date = `${n.getMonth()+1}/${n.getDate()}`;
+  const time = `${String(n.getHours()).padStart(2,'0')}:${String(n.getMinutes()).padStart(2,'0')}`;
+  p.history.unshift({ row: p.count, dir, date, time });
+  if (p.history.length > 20) p.history.pop();
 }
 
-function resetConfirm() {
-  const p = projects[activeIdx];
-  if (p.count === 0) return;
-  if (confirm(`"${p.name}" 단수를 0으로 초기화할까요?`)) {
-    p.count = 0;
-    p.history = [];
-    saveProject();
-    updateUI();
-    showToast('↺ 초기화됐어요');
-  }
+// ── 입력 ──
+function onName() { cur().name = document.getElementById('nameInp').value || '새 프로젝트'; save(); renderTabs(); }
+function onGoal() { cur().goal = parseInt(document.getElementById('goalInp').value) || 0; save(); renderProgress(); }
+function onMemo() { cur().memo = document.getElementById('memoInp').value; save(); }
+
+// ── 프로젝트 ──
+function switchP(i) { S.active = i; save(); renderAll(); }
+
+function delP(i) {
+  if (S.projects.length <= 1) { toast('마지막 프로젝트는 삭제할 수 없어요'); return; }
+  if (!confirm(`"${S.projects[i].name}"을 삭제할까요?`)) return;
+  S.projects.splice(i, 1);
+  if (S.active >= S.projects.length) S.active = S.projects.length - 1;
+  save(); renderAll();
 }
 
-// ══════════════════════════════════════════════════════
-// GOAL
-// ══════════════════════════════════════════════════════
-function updateGoal() {
-  const val = parseInt(document.getElementById('goalInput').value) || 0;
-  projects[activeIdx].goal = val;
-  saveProject();
-  updateProgress();
-}
-
-function updateProgress() {
-  const p = projects[activeIdx];
-  const pct = p.goal > 0 ? Math.min(100, Math.round(p.count / p.goal * 100)) : 0;
-  const fill = document.getElementById('progressFill');
-  const pctEl = document.getElementById('goalPct');
-  fill.style.width = pct + '%';
-  fill.classList.toggle('done', pct >= 100);
-  pctEl.textContent = p.goal > 0 ? pct + '%' : '—';
-}
-
-// ══════════════════════════════════════════════════════
-// PROJECT MANAGEMENT
-// ══════════════════════════════════════════════════════
-function saveProject() {
-  const p = projects[activeIdx];
-  p.name = document.getElementById('projectName').value || '새 프로젝트';
-  p.memo = document.getElementById('memoInput').value;
-  save();
-  renderTabs();
-}
-
-function switchProject(idx) {
-  activeIdx = idx;
-  save();
-  updateUI();
-  renderTabs();
-}
-
-function deleteProject(idx, e) {
-  e.stopPropagation();
-  if (projects.length <= 1) { showToast('마지막 프로젝트는 삭제할 수 없어요'); return; }
-  if (!confirm(`"${projects[idx].name}"을 삭제할까요?`)) return;
-  projects.splice(idx, 1);
-  if (activeIdx >= projects.length) activeIdx = projects.length - 1;
-  save();
-  render();
-}
-
-function openAddProject() {
-  document.getElementById('newProjectName').value = '';
+function openAdd() {
+  document.getElementById('newInp').value = '';
   document.getElementById('addModal').classList.add('show');
-  setTimeout(() => document.getElementById('newProjectName').focus(), 100);
+  setTimeout(() => document.getElementById('newInp').focus(), 100);
 }
 
-function confirmAddProject() {
-  const name = document.getElementById('newProjectName').value.trim() || '새 프로젝트';
-  projects.push(newProject(name));
-  activeIdx = projects.length - 1;
-  save();
-  closeModal();
-  render();
-  showToast('🧶 ' + name + ' 추가됐어요!');
+function confirmAdd() {
+  const name = document.getElementById('newInp').value.trim() || '새 프로젝트';
+  S.projects.push(mkP(name));
+  S.active = S.projects.length - 1;
+  save(); closeModal(); renderAll();
+  toast('🧶 ' + name + ' 추가됐어요!');
 }
 
-function closeModal() {
-  document.getElementById('addModal').classList.remove('show');
-}
+function closeModal() { document.getElementById('addModal').classList.remove('show'); }
 
-// ══════════════════════════════════════════════════════
-// RENDER
-// ══════════════════════════════════════════════════════
-function render() {
-  renderTabs();
-  updateUI();
-}
+// ── 렌더 ──
+function renderAll() { renderTabs(); renderCard(); renderHist(); }
 
 function renderTabs() {
-  const wrap = document.getElementById('tabsWrap');
-  wrap.innerHTML = projects.map((p, i) => `
-    <div class="tab ${i === activeIdx ? 'active' : ''}" onclick="switchProject(${i})">
-      ${p.name}
-      <span class="del-tab" onclick="deleteProject(${i}, event)">✕</span>
-    </div>
-  `).join('') + `<button class="tab-add" onclick="openAddProject()">+</button>`;
+  // 탭 목록 + 추가 버튼을 한 번에 렌더링 (중복 방지)
+  document.getElementById('tabsRow').innerHTML =
+    S.projects.map((p, i) => `
+      <div class="tab ${i === S.active ? 'active' : ''}" onclick="switchP(${i})">
+        ${esc(p.name)}
+        <span class="tab-x" onclick="event.stopPropagation();delP(${i})">✕</span>
+      </div>`
+    ).join('') +
+    `<button class="btn-add-tab" onclick="openAdd()" title="새 프로젝트">＋</button>`;
 }
 
-function updateUI() {
-  const p = projects[activeIdx];
-  document.getElementById('projectName').value = p.name;
-  document.getElementById('countNumber').textContent = p.count;
-  document.getElementById('goalInput').value = p.goal || '';
-  document.getElementById('memoInput').value = p.memo || '';
-
-  // 홀짝 배지
-  const badge = document.getElementById('parityBadge');
-  if (p.count % 2 === 0) {
-    badge.textContent = '짝수단';
-    badge.className = 'parity-badge even';
-  } else {
-    badge.textContent = '홀수단';
-    badge.className = 'parity-badge odd';
-  }
-
-  updateProgress();
-  renderHistory();
+function renderCard() {
+  const p = cur();
+  document.getElementById('nameInp').value = p.name;
+  document.getElementById('countNum').textContent = p.count;
+  document.getElementById('goalInp').value = p.goal || '';
+  document.getElementById('memoInp').value = p.memo || '';
+  const pill = document.getElementById('parityPill');
+  const isOdd = p.count % 2 !== 0;
+  pill.textContent = isOdd ? '홀수단' : '짝수단';
+  pill.className = 'parity-pill ' + (isOdd ? 'odd' : 'even');
+  renderProgress();
 }
 
-function renderHistory() {
-  const p = projects[activeIdx];
-  const list = document.getElementById('historyList');
+function renderProgress() {
+  const p = cur();
+  const pct = p.goal > 0 ? Math.min(100, Math.round(p.count / p.goal * 100)) : 0;
+  document.getElementById('barFill').style.width = pct + '%';
+  document.getElementById('barFill').classList.toggle('done', pct >= 100);
+  document.getElementById('goalPct').textContent = p.goal > 0 ? pct + '%' : '—';
+}
+
+function renderHist() {
+  const p = cur();
+  const el = document.getElementById('histList');
   if (!p.history.length) {
-    list.innerHTML = '<div style="font-size:0.78rem;color:var(--dim);padding:10px 4px;">아직 기록이 없어요. 단수 +1을 눌러보세요!</div>';
+    el.innerHTML = '<div class="hist-empty">아직 기록이 없어요.<br>단수 +1을 눌러보세요! 🧶</div>';
     return;
   }
-  list.innerHTML = p.history.map(h => `
-    <div class="history-item">
-      <span class="history-dot ${h.dir}"></span>
-      <span class="history-row">${h.dir === 'up' ? '▲' : '▼'} ${h.row}단</span>
-      <span class="history-time">${h.time}</span>
-    </div>
-  `).join('');
+  el.innerHTML = p.history.map(h => {
+    const odd = h.row % 2 !== 0;
+    return `
+      <div class="hist-item">
+        <div class="hist-ico ${h.dir}">${h.dir === 'up' ? '▲' : '▼'}</div>
+        <span class="hist-row">${h.row}단</span>
+        <span class="hist-pill ${odd ? 'odd' : 'even'}">${odd ? '홀수단' : '짝수단'}</span>
+        <span class="hist-time">${h.date} ${h.time}</span>
+      </div>`;
+  }).join('');
 }
 
-// ══════════════════════════════════════════════════════
-// ANIMATIONS & FEEDBACK
-// ══════════════════════════════════════════════════════
-function animateNumber(type) {
-  const el = document.getElementById('countNumber');
-  el.classList.remove('bump', 'down');
-  void el.offsetWidth;
-  el.classList.add(type);
-  setTimeout(() => el.classList.remove(type), 200);
+// ── 완료 ──
+function showDone() {
+  const p = cur();
+  document.getElementById('doneDesc').textContent = `"${p.name}" — ${p.count}단 완성! 🎊`;
+  document.getElementById('doneOv').classList.add('show');
+  buzz([100, 50, 100, 50, 200]);
+}
+function closeDone() { document.getElementById('doneOv').classList.remove('show'); }
+
+// ── 유틸 ──
+function anim(cls) {
+  const el = document.getElementById('countNum');
+  el.classList.remove('bump','dip'); void el.offsetWidth;
+  el.classList.add(cls); setTimeout(() => el.classList.remove(cls), 200);
+}
+function buzz(p) { try { if (navigator.vibrate) navigator.vibrate(p); } catch(e) {} }
+function toast(msg) {
+  const el = document.getElementById('toast');
+  el.textContent = msg; el.classList.add('show');
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('show'), 2500);
+}
+function esc(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
-function shake() {
-  const el = document.getElementById('counterCard');
-  el.classList.add('vibrate');
-  setTimeout(() => el.classList.remove('vibrate'), 300);
-  showToast('이미 0단이에요!');
-}
-
-function vibrate(pattern) {
-  if ('vibrate' in navigator) navigator.vibrate(pattern);
-}
-
-function showDone(p) {
-  document.getElementById('doneSubText').textContent = `"${p.name}" — ${p.count}단 완성! 🎊`;
-  document.getElementById('doneOverlay').classList.add('show');
-  vibrate([100, 50, 100, 50, 200]);
-}
-
-function closeDone() {
-  document.getElementById('doneOverlay').classList.remove('show');
-}
-
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 2500);
-}
-
-// ══════════════════════════════════════════════════════
-// STORAGE
-// ══════════════════════════════════════════════════════
-function save() {
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ projects, activeIdx }));
-  } catch(e) {}
-}
-
-function load() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return;
-    const data = JSON.parse(raw);
-    projects  = data.projects  || [];
-    activeIdx = data.activeIdx || 0;
-    if (activeIdx >= projects.length) activeIdx = 0;
-  } catch(e) {
-    projects = [];
-  }
-}
-
-// 엔터로 프로젝트 추가
-document.getElementById('newProjectName')?.addEventListener('keydown', e => {
-  if (e.key === 'Enter') confirmAddProject();
-  if (e.key === 'Escape') closeModal();
+// 키보드
+document.addEventListener('keydown', e => {
+  if (['INPUT','TEXTAREA'].includes(e.target.tagName)) return;
+  if (e.key === ' ' || e.key === 'ArrowUp')  { e.preventDefault(); inc(); }
+  if (e.key === 'ArrowDown')                  { e.preventDefault(); dec(); }
 });
 
-// 모달 배경 클릭 닫기
-document.getElementById('addModal')?.addEventListener('click', function(e) {
+// 모달
+document.getElementById('addModal').addEventListener('click', function(e) {
   if (e.target === this) closeModal();
 });
-
-// 키보드 단축키 (노션 외부에서 열 때)
-document.addEventListener('keydown', e => {
-  if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
-  if (e.key === ' ' || e.key === 'ArrowUp') { e.preventDefault(); increment(); }
-  if (e.key === 'ArrowDown') { e.preventDefault(); decrement(); }
+document.getElementById('newInp').addEventListener('keydown', e => {
+  if (e.key === 'Enter') confirmAdd();
+  if (e.key === 'Escape') closeModal();
 });
 </script>
 </body>
