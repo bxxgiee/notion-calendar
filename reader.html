@@ -862,7 +862,7 @@ async function extractText(silent = false) {
   return fullText.trim();
 }
 
-// 핵심: PDF 텍스트 아이템의 Y좌표 기준으로 같은 줄끼리 묶어 줄넘김 복원
+// ── STEP 1: Y좌표로 줄 묶기 + X좌표로 띄어쓰기 복원 ──────────────────
 function reconstructLines(items) {
   if (!items.length) return '';
 
@@ -872,19 +872,19 @@ function reconstructLines(items) {
       x: item.transform[4],
       y: item.transform[5],
       text: item.str,
-      fontSize: Math.abs(item.transform[3])
+      fontSize: Math.abs(item.transform[3]) || 10
     }));
 
   if (!tokens.length) return '';
 
-  // Y좌표가 비슷한 것끼리 같은 줄로 묶기 (허용 오차: 폰트 크기의 30%)
+  // Y좌표가 비슷한 것끼리 같은 줄로 묶기
   const lines = [];
   let currentLine = [tokens[0]];
 
   for (let i = 1; i < tokens.length; i++) {
     const curr = tokens[i];
     const lineY = currentLine[0].y;
-    const tolerance = (currentLine[0].fontSize || 10) * 0.5;
+    const tolerance = (currentLine[0].fontSize) * 0.45;
 
     if (Math.abs(curr.y - lineY) <= tolerance) {
       currentLine.push(curr);
@@ -895,34 +895,108 @@ function reconstructLines(items) {
   }
   lines.push(currentLine);
 
-  // PDF는 Y축이 아래→위 방향이므로 Y 내림차순 = 위→아래 순서
+  // PDF Y축은 아래→위이므로 내림차순 = 위→아래 순서
   lines.sort((a, b) => b[0].y - a[0].y);
 
-  const resultLines = lines.map(line => {
-    // 줄 안에서 X 오름차순 정렬
+  const rawLines = lines.map(line => {
     line.sort((a, b) => a.x - b.x);
 
     let lineText = line[0].text;
     for (let i = 1; i < line.length; i++) {
       const prev = line[i - 1];
       const curr = line[i];
-      // 앞 토큰의 끝 X 위치 추정 (글자수 × 폰트크기 × 0.55)
-      const prevEnd = prev.x + prev.text.length * (prev.fontSize || 10) * 0.55;
+      // 앞 토큰 끝 X 추정: 글자수 × 폰트크기 × 0.52 (한글 기준)
+      const prevEnd = prev.x + prev.text.length * prev.fontSize * 0.52;
       const gap = curr.x - prevEnd;
-      // 간격이 폰트 크기의 0.4배 이상이면 공백 삽입
-      if (gap > (prev.fontSize || 10) * 0.4) {
+      // 폰트 크기의 25% 이상 간격이면 공백 — 한글 워드스페이스 기준
+      if (gap > prev.fontSize * 0.25) {
         lineText += ' ' + curr.text;
       } else {
         lineText += curr.text;
       }
     }
     return lineText.trim();
-  });
+  }).filter(l => l.length > 0);
 
-  return resultLines
-    .filter(l => l.length > 0)
+  // ── STEP 2: 끊긴 문장 이어붙이기 ─────────────────────────────────────
+  const joinedLines = joinBrokenSentences(rawLines);
+
+  // ── STEP 3: 띄어쓰기 보정 ────────────────────────────────────────────
+  const spacedLines = joinedLines.map(fixSpacing);
+
+  return spacedLines
     .join('\n')
     .replace(/\n{3,}/g, '\n\n')
+    .trim();
+}
+
+// ── STEP 2 구현: 끊긴 문장 감지 후 이어붙이기 ──────────────────────────
+function joinBrokenSentences(lines) {
+  const result = [];
+  let buffer = '';
+
+  // 새 문장/단락 시작 패턴
+  const NEW_BLOCK = /^(\d+\s*[단행코줄단계번]|[①-⑳]|[-•*▶◆■□●]|[A-Z]{2,}|[가-힣]+\s*[:：]|Row\s*\d|Round\s*\d|Rnd\s*\d|Cast|Bind|CO\s*\d|BO\s*\d)/i;
+  // 문장 종결 문자 (이 뒤에 오면 새 줄 시작)
+  const ENDS_SENTENCE = /[.。!?！？…]\s*$/;
+  // 이어질 수 없는 시작 (다음 줄이 이걸로 시작하면 새 단락)
+  const CANT_CONTINUE = /^[.。,，!?！？\s]/;
+
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+
+    if (!line) {
+      // 빈 줄 = 단락 구분 → 버퍼 flush
+      if (buffer) { result.push(buffer); buffer = ''; }
+      result.push('');
+      continue;
+    }
+
+    const isNewBlock = NEW_BLOCK.test(line);
+    const prevEndsSentence = ENDS_SENTENCE.test(buffer);
+    const cantContinue = CANT_CONTINUE.test(line);
+
+    if (!buffer) {
+      buffer = line;
+    } else if (isNewBlock || prevEndsSentence || cantContinue) {
+      // 새 블록 시작
+      result.push(buffer);
+      buffer = line;
+    } else {
+      // 끊긴 문장 → 공백 없이 이어붙이기
+      // (좌표 기반으로 이미 같은 줄은 합쳐져 있으므로 여기선 줄 경계만 처리)
+      const lastChar = buffer.slice(-1);
+      const firstChar = line.charAt(0);
+      // 앞줄 마지막이 한글/영문, 다음 줄 첫 글자도 같으면 그냥 붙이기
+      const isKorean = (ch) => /[가-힣]/.test(ch);
+      const isAlpha  = (ch) => /[a-zA-Z0-9]/.test(ch);
+      if ((isKorean(lastChar) && isKorean(firstChar)) ||
+          (isAlpha(lastChar) && isAlpha(firstChar))) {
+        buffer += line;      // 공백 없이 이어붙임
+      } else {
+        buffer += ' ' + line;
+      }
+    }
+  }
+  if (buffer) result.push(buffer);
+
+  return result;
+}
+
+// ── STEP 3 구현: 숫자/영문 경계 띄어쓰기 보정 ──────────────────────────
+function fixSpacing(text) {
+  return text
+    // 숫자 ↔ 한글 경계
+    .replace(/(\d)([가-힣])/g, '$1 $2')
+    .replace(/([가-힣])(\d)/g, '$1 $2')
+    // 영문 ↔ 한글 경계 (대소문자 포함)
+    .replace(/([a-zA-Z])([가-힣])/g, '$1 $2')
+    .replace(/([가-힣])([a-zA-Z])/g, '$1 $2')
+    // 괄호 앞뒤 공백
+    .replace(/([가-힣a-zA-Z0-9])([({[])/g, '$1 $2')
+    .replace(/([)}\]])([가-힣a-zA-Z0-9])/g, '$1 $2')
+    // 연속 공백 제거
+    .replace(/  +/g, ' ')
     .trim();
 }
 
