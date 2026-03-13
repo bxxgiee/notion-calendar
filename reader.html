@@ -862,10 +862,14 @@ async function extractText(silent = false) {
   return fullText.trim();
 }
 
-// ── STEP 1: Y좌표로 줄 묶기 + X좌표로 띄어쓰기 복원 ──────────────────
+// ══════════════════════════════════════════════════════════════════════
+// PDF 텍스트 복원 메인 함수
+// 접근법: 패턴 추측 대신 "이 문서의 실제 줄간격"을 측정해서 판단
+// ══════════════════════════════════════════════════════════════════════
 function reconstructLines(items) {
   if (!items.length) return '';
 
+  // 1) 토큰 추출
   const tokens = items
     .filter(item => item.str.trim())
     .map(item => ({
@@ -874,128 +878,139 @@ function reconstructLines(items) {
       text: item.str,
       fontSize: Math.abs(item.transform[3]) || 10
     }));
-
   if (!tokens.length) return '';
 
-  // Y좌표가 비슷한 것끼리 같은 줄로 묶기
-  const lines = [];
-  let currentLine = [tokens[0]];
+  // 2) Y좌표 기준으로 물리적 줄 묶기
+  const physicalLines = groupIntoLines(tokens);
 
-  for (let i = 1; i < tokens.length; i++) {
-    const curr = tokens[i];
-    const lineY = currentLine[0].y;
-    const tolerance = (currentLine[0].fontSize) * 0.45;
+  // 3) 이 문서의 줄간격 분포를 측정해서 기준값 산출
+  const { normalGap, paraGap } = measureLineSpacing(physicalLines);
 
-    if (Math.abs(curr.y - lineY) <= tolerance) {
-      currentLine.push(curr);
-    } else {
-      lines.push(currentLine);
-      currentLine = [curr];
-    }
-  }
-  lines.push(currentLine);
+  // 4) 줄간격에 따라 같은 문단끼리 합치기
+  const paragraphs = mergeParagraphs(physicalLines, normalGap, paraGap);
 
-  // PDF Y축은 아래→위이므로 내림차순 = 위→아래 순서
-  lines.sort((a, b) => b[0].y - a[0].y);
-
-  const rawLines = lines.map(line => {
-    line.sort((a, b) => a.x - b.x);
-
-    let lineText = line[0].text;
-    for (let i = 1; i < line.length; i++) {
-      const prev = line[i - 1];
-      const curr = line[i];
-      // 앞 토큰 끝 X 추정: 글자수 × 폰트크기 × 0.52 (한글 기준)
-      const prevEnd = prev.x + prev.text.length * prev.fontSize * 0.52;
-      const gap = curr.x - prevEnd;
-      // 폰트 크기의 25% 이상 간격이면 공백 — 한글 워드스페이스 기준
-      if (gap > prev.fontSize * 0.25) {
-        lineText += ' ' + curr.text;
-      } else {
-        lineText += curr.text;
-      }
-    }
-    return lineText.trim();
-  }).filter(l => l.length > 0);
-
-  // ── STEP 2: 끊긴 문장 이어붙이기 ─────────────────────────────────────
-  const joinedLines = joinBrokenSentences(rawLines);
-
-  // ── STEP 3: 띄어쓰기 보정 ────────────────────────────────────────────
-  const spacedLines = joinedLines.map(fixSpacing);
-
-  return spacedLines
+  // 5) 각 문단 내 띄어쓰기 보정
+  return paragraphs
+    .map(fixSpacing)
     .join('\n')
     .replace(/\n{3,}/g, '\n\n')
     .trim();
 }
 
-// ── STEP 2 구현: 끊긴 문장 감지 후 이어붙이기 ──────────────────────────
-function joinBrokenSentences(lines) {
-  const result = [];
-  let buffer = '';
+// ── 물리적 줄 묶기: Y 허용 오차 내 토큰 → 한 줄 ─────────────────────
+function groupIntoLines(tokens) {
+  const lines = [];
+  let cur = [tokens[0]];
 
-  // 새 문장/단락 시작 패턴
-  const NEW_BLOCK = /^(\d+\s*[단행코줄단계번]|[①-⑳]|[-•*▶◆■□●]|[A-Z]{2,}|[가-힣]+\s*[:：]|Row\s*\d|Round\s*\d|Rnd\s*\d|Cast|Bind|CO\s*\d|BO\s*\d)/i;
-  // 문장 종결 문자 (이 뒤에 오면 새 줄 시작)
-  const ENDS_SENTENCE = /[.。!?！？…]\s*$/;
-  // 이어질 수 없는 시작 (다음 줄이 이걸로 시작하면 새 단락)
-  const CANT_CONTINUE = /^[.。,，!?！？\s]/;
-
-  for (let i = 0; i < lines.length; i++) {
-    const line = lines[i];
-
-    if (!line) {
-      // 빈 줄 = 단락 구분 → 버퍼 flush
-      if (buffer) { result.push(buffer); buffer = ''; }
-      result.push('');
-      continue;
-    }
-
-    const isNewBlock = NEW_BLOCK.test(line);
-    const prevEndsSentence = ENDS_SENTENCE.test(buffer);
-    const cantContinue = CANT_CONTINUE.test(line);
-
-    if (!buffer) {
-      buffer = line;
-    } else if (isNewBlock || prevEndsSentence || cantContinue) {
-      // 새 블록 시작
-      result.push(buffer);
-      buffer = line;
+  for (let i = 1; i < tokens.length; i++) {
+    const t = tokens[i];
+    const tol = cur[0].fontSize * 0.45;
+    if (Math.abs(t.y - cur[0].y) <= tol) {
+      cur.push(t);
     } else {
-      // 끊긴 문장 → 공백 없이 이어붙이기
-      // (좌표 기반으로 이미 같은 줄은 합쳐져 있으므로 여기선 줄 경계만 처리)
-      const lastChar = buffer.slice(-1);
-      const firstChar = line.charAt(0);
-      // 앞줄 마지막이 한글/영문, 다음 줄 첫 글자도 같으면 그냥 붙이기
-      const isKorean = (ch) => /[가-힣]/.test(ch);
-      const isAlpha  = (ch) => /[a-zA-Z0-9]/.test(ch);
-      if ((isKorean(lastChar) && isKorean(firstChar)) ||
-          (isAlpha(lastChar) && isAlpha(firstChar))) {
-        buffer += line;      // 공백 없이 이어붙임
-      } else {
-        buffer += ' ' + line;
-      }
+      lines.push(cur);
+      cur = [t];
     }
   }
-  if (buffer) result.push(buffer);
+  lines.push(cur);
+
+  // PDF Y축 = 아래→위, 내림차순으로 정렬 = 문서 위→아래
+  lines.sort((a, b) => b[0].y - a[0].y);
+
+  // 각 줄 내 X 정렬 + 토큰 합치기
+  return lines.map(line => {
+    line.sort((a, b) => a.x - b.x);
+    let text = line[0].text;
+    for (let i = 1; i < line.length; i++) {
+      const prev = line[i-1], curr = line[i];
+      const prevEnd = prev.x + prev.text.length * prev.fontSize * 0.52;
+      const gap = curr.x - prevEnd;
+      text += gap > prev.fontSize * 0.25 ? ' ' + curr.text : curr.text;
+    }
+    return {
+      text: text.trim(),
+      y: line[0].y,
+      fontSize: line[0].fontSize
+    };
+  }).filter(l => l.text.length > 0);
+}
+
+// ── 줄간격 측정: 이 문서의 '보통 줄간격'과 '단락 구분 간격' 산출 ──────
+function measureLineSpacing(lines) {
+  if (lines.length < 2) return { normalGap: 20, paraGap: 35 };
+
+  // 연속된 줄들 사이의 Y 간격 수집
+  const gaps = [];
+  for (let i = 0; i < lines.length - 1; i++) {
+    const gap = lines[i].y - lines[i+1].y; // 위 줄 Y - 아래 줄 Y (양수)
+    if (gap > 0 && gap < 200) gaps.push(gap);
+  }
+  if (!gaps.length) return { normalGap: 20, paraGap: 35 };
+
+  // 중앙값을 '보통 줄간격'으로 사용 (평균보다 이상치에 강함)
+  gaps.sort((a, b) => a - b);
+  const median = gaps[Math.floor(gaps.length / 2)];
+
+  // 보통 줄간격의 1.6배 이상 = 단락 구분으로 판단
+  const normalGap = median * 1.3;  // 같은 문단으로 볼 최대 간격
+  const paraGap   = median * 1.6;  // 새 단락으로 볼 최소 간격
+
+  return { normalGap, paraGap };
+}
+
+// ── 문단 합치기: 줄간격 기준으로 같은 문단 내 줄은 이어붙임 ───────────
+function mergeParagraphs(lines, normalGap, paraGap) {
+  if (!lines.length) return [];
+
+  const result   = [];
+  let paraBuffer = lines[0].text;
+  let prevY      = lines[0].y;
+  let prevFS     = lines[0].fontSize;
+
+  for (let i = 1; i < lines.length; i++) {
+    const line = lines[i];
+    const gap  = prevY - line.y; // 이전 줄 Y - 현재 줄 Y
+
+    // 뜨개 도안 특수 패턴: 항상 새 줄로 시작해야 하는 것들
+    const forceNewLine = /^(\d+\s*[단행코]|Row\s*\d|Round\s*\d|Rnd\s*\d|[①-⑳◆■●▶]|[-─━]+$)/i.test(line.text);
+
+    if (forceNewLine || gap > normalGap) {
+      // 새 줄 or 새 단락
+      result.push(paraBuffer);
+      if (gap > paraGap) result.push(''); // 단락 사이 빈 줄
+      paraBuffer = line.text;
+    } else {
+      // 같은 문단 내 줄바꿈 → 이어붙이기
+      const lastChar  = paraBuffer.slice(-1);
+      const firstChar = line.text.charAt(0);
+      const isKor = ch => /[가-힣]/.test(ch);
+      const isAlp = ch => /[a-zA-Z0-9]/.test(ch);
+
+      if (isKor(lastChar) && isKor(firstChar)) {
+        paraBuffer += line.text;       // 한글-한글: 공백 없이
+      } else if (isAlp(lastChar) && isAlp(firstChar)) {
+        paraBuffer += line.text;       // 영문-영문: 공백 없이 (k2tog 등)
+      } else {
+        paraBuffer += ' ' + line.text; // 그 외: 공백 하나
+      }
+    }
+    prevY  = line.y;
+    prevFS = line.fontSize;
+  }
+  if (paraBuffer) result.push(paraBuffer);
 
   return result;
 }
 
-// ── STEP 3 구현: 숫자/영문 경계 띄어쓰기 보정 ──────────────────────────
+// ── 띄어쓰기 보정: 좌표로 못 잡는 경계 규칙 보정 ─────────────────────
 function fixSpacing(text) {
   return text
-    // 숫자 ↔ 한글 경계
-    .replace(/(\d)([가-힣])/g, '$1 $2')
-    .replace(/([가-힣])(\d)/g, '$1 $2')
-    // 영문 ↔ 한글 경계 (대소문자 포함)
-    .replace(/([a-zA-Z])([가-힣])/g, '$1 $2')
-    .replace(/([가-힣])([a-zA-Z])/g, '$1 $2')
-    // 괄호 앞뒤 공백
-    .replace(/([가-힣a-zA-Z0-9])([({[])/g, '$1 $2')
-    .replace(/([)}\]])([가-힣a-zA-Z0-9])/g, '$1 $2')
-    // 연속 공백 제거
+    .replace(/(\d)([가-힣])/g,          '$1 $2')  // 10코 → 10 코
+    .replace(/([가-힣])(\d)/g,          '$1 $2')  // 코10 → 코 10
+    .replace(/([a-zA-Z])([가-힣])/g,     '$1 $2')  // k뜨기 → k 뜨기
+    .replace(/([가-힣])([a-zA-Z])/g,     '$1 $2')  // 뜨기k → 뜨기 k
+    .replace(/([가-힣a-zA-Z0-9])([({[])/g,'$1 $2') // 반복( → 반복 (
+    .replace(/([)}\]])([가-힣a-zA-Z0-9])/g,'$1 $2')
     .replace(/  +/g, ' ')
     .trim();
 }
