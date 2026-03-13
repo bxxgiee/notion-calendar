@@ -1071,34 +1071,41 @@ function selectMethod(method) {
   });
 }
 
-async function copyToClipboard(type) {
+function copyToClipboard(type) {
   const textarea = document.getElementById(type === 'raw' ? 'rawText' : 'cleanText');
   const text = textarea.value;
 
   if (!text) { showToast('❌ 복사할 텍스트가 없습니다'); return; }
 
-  // 줄넘김을 <br>로 변환한 HTML 버전 생성
-  // 노션은 HTML 형식의 클립보드를 우선 인식하므로 줄넘김이 정확히 유지됨
-  const htmlText = text
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/\n/g, '<br>');
-  const html = `<div style="white-space:pre-wrap;">${htmlText}</div>`;
+  // 숨겨진 div에 텍스트를 넣고 브라우저 기본 복사 사용
+  // → 브라우저가 자동으로 HTML(줄넘김 포함) + plain text 둘 다 클립보드에 담아줌
+  // → 노션이 HTML 버전을 읽어서 줄넘김을 정확히 유지함
+  const div = document.createElement('div');
+  div.style.cssText = 'position:fixed;left:-9999px;top:-9999px;white-space:pre-wrap;font-family:monospace;';
+  div.textContent = text; // textContent로 넣으면 \n이 그대로 보존됨
+  document.body.appendChild(div);
+
+  const range = document.createRange();
+  range.selectNodeContents(div);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
 
   try {
-    // ClipboardItem으로 plain text + HTML 동시에 복사
-    const clipItem = new ClipboardItem({
-      'text/plain': new Blob([text], { type: 'text/plain' }),
-      'text/html':  new Blob([html], { type: 'text/html' })
-    });
-    await navigator.clipboard.write([clipItem]);
-    showToast('✅ 줄넘김 포함 복사 완료! 노션에 붙여넣기 하세요');
+    const success = document.execCommand('copy');
+    if (success) {
+      showToast('✅ 줄넘김 포함 복사 완료! 노션에 붙여넣기 하세요');
+    } else {
+      throw new Error('copy failed');
+    }
   } catch {
-    // 폴백: execCommand 방식 (줄넘김 plain text만)
+    // 최후 폴백
     textarea.select();
     document.execCommand('copy');
-    showToast('✅ 복사 완료! (줄넘김은 Shift+Enter로 붙여넣기)');
+    showToast('✅ 복사 완료! 노션에 붙여넣기 하세요');
+  } finally {
+    sel.removeAllRanges();
+    document.body.removeChild(div);
   }
 }
 
