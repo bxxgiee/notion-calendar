@@ -10,30 +10,7 @@
 [data-dark]{--bg:#191919;--sf:#252525;--bd:#333;--tx:#ececec;--t2:#888;--t3:#444;}
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-serif;font-size:14px;}
-.setup{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
-.box{width:100%;max-width:360px;background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:28px 24px;}
-.logo{font-size:28px;margin-bottom:10px;}
-.box h1{font-size:17px;font-weight:600;margin-bottom:5px;letter-spacing:-.3px;}
-.box .sub{font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:20px;}
-.steps{margin-bottom:20px;display:flex;flex-direction:column;gap:8px;}
-.step-item{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;}
-.step-num{width:20px;height:20px;border-radius:50%;background:var(--acc);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
-.step-item p{font-size:12px;color:var(--t2);line-height:1.6;}
-.step-item p strong{color:var(--tx);font-weight:600;}
-.step-item p a{color:var(--acc);text-decoration:none;}
-.step-item p code{background:var(--sf);border:1px solid var(--bd);padding:1px 4px;border-radius:3px;font-size:10px;}
-.fld{margin-bottom:12px;}
-.fld label{display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--t2);margin-bottom:6px;}
-.fld label span{font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3);}
-.fld input{width:100%;padding:10px 12px;border:1.5px solid var(--bd);border-radius:var(--r);background:var(--bg);color:var(--tx);font-family:inherit;font-size:13px;outline:none;transition:border-color .2s;}
-.fld input:focus{border-color:var(--acc);}
-.fld input::placeholder{color:var(--t3);}
-.divider{display:flex;align-items:center;gap:8px;margin:16px 0;color:var(--t3);font-size:11px;}
-.divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bd);}
-.btn{width:100%;padding:12px;background:var(--acc);color:#fff;border:none;border-radius:var(--r);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;}
-.btn:hover{opacity:.88;}.btn:disabled{opacity:.5;cursor:not-allowed;}
-.err{font-size:12px;color:#e05555;background:rgba(224,85,85,.08);padding:9px 12px;border-radius:6px;margin-top:10px;line-height:1.6;}
-#app{display:none;padding:10px;}
+#app{padding:10px;}
 .hd{display:flex;align-items:center;gap:6px;padding:10px 12px;background:var(--sf);border:1px solid var(--bd);border-radius:10px 10px 0 0;margin-bottom:2px;}
 .hd-t{flex:1;font-size:14px;font-weight:600;letter-spacing:-.3px;}
 .hd-t span{color:var(--acc);font-weight:400;margin-left:3px;}
@@ -92,54 +69,9 @@ html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-s
 .tgl input:checked+.tsl{background:var(--acc);}
 .tgl input:checked+.tsl::before{transform:translateX(16px);}
 .sb{width:100%;padding:9px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);font-family:inherit;font-size:12px;cursor:pointer;color:var(--tx);margin-bottom:6px;}
-.sb.red{color:#e05555;border-color:rgba(224,85,85,.3);}
 </style>
 </head>
 <body>
-
-<div class="setup" id="setup">
-  <div class="box">
-    <div class="logo">🗓</div>
-    <h1>이미지 캘린더 위젯</h1>
-    <p class="sub">처음 한 번만 설정하면 그 다음부터는 자동이에요</p>
-
-    <div class="steps">
-      <div class="step-item">
-        <div class="step-num">1</div>
-        <p><a href="https://www.notion.so/my-integrations" target="_blank"><strong>notion.so/my-integrations</strong></a> → 통합 만들기 → <strong>토큰 복사</strong></p>
-      </div>
-      <div class="step-item">
-        <div class="step-num">2</div>
-        <p>노션 DB 우상단 <code>···</code> → <code>Connections</code> → 방금 만든 통합 추가</p>
-      </div>
-      <div class="step-item">
-        <div class="step-num">3</div>
-        <p>아래 입력 후 연결 → <strong>다시는 안 물어봐요</strong></p>
-      </div>
-    </div>
-
-    <div class="fld">
-      <label>Integration Token</label>
-      <input id="tok" type="password" placeholder="ntn_xxxx 또는 secret_xxxx"/>
-    </div>
-    <div class="divider">DB 정보</div>
-    <div class="fld">
-      <label>Database URL</label>
-      <input id="dbu" type="text" placeholder="https://www.notion.so/..."/>
-    </div>
-    <div class="fld">
-      <label>날짜 속성 이름 <span>기본값: 날짜</span></label>
-      <input id="dp" type="text" value="날짜"/>
-    </div>
-    <div class="fld">
-      <label>이미지 속성 이름 <span>기본값: 파일과 미디어</span></label>
-      <input id="ip" type="text" value="파일과 미디어"/>
-    </div>
-
-    <div id="err" class="err" style="display:none"></div>
-    <button class="btn" id="cb" onclick="connect()">연결하기 →</button>
-  </div>
-</div>
 
 <div id="app">
   <div class="hd">
@@ -151,8 +83,8 @@ html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-s
   </div>
   <div class="drow" id="drow"></div>
   <div class="grid" id="grid"></div>
-  <div id="lmsg" class="lmsg" style="display:none"></div>
-  <div class="ft"><div class="live"></div><span id="ftxt"></span></div>
+  <div id="lmsg" class="lmsg"><span class="spin"></span>불러오는 중...</div>
+  <div class="ft"><div class="live"></div><span id="ftxt">-</span></div>
 </div>
 
 <div class="ov" id="ov" onclick="closeMo()">
@@ -178,124 +110,20 @@ html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-s
   <div class="sr"><label>다크 모드</label><div class="tr"><span style="font-size:12px">🌙</span><label class="tgl"><input type="checkbox" id="dkt" onchange="setDk(this.checked)"><span class="tsl"></span></label></div></div>
   <div class="sr"><label>주 시작</label><div class="tr"><span style="font-size:12px;color:var(--t2)" id="wsl">일요일</span><label class="tgl"><input type="checkbox" id="mnt" onchange="setMon(this.checked)"><span class="tsl"></span></label></div></div>
   <div class="sr" style="border-top:1px solid var(--bd);padding-top:12px">
-    <button class="sb" onclick="refresh()">↺ 새로고침</button>
-    <button class="sb" onclick="goSetup()">토큰 / DB 변경</button>
-    <button class="sb red" onclick="reset()">전체 초기화</button>
+    <div style="font-size:11px;color:var(--t2);margin-bottom:8px;line-height:1.5">데이터는 GitHub Actions가<br>매 1시간마다 자동 업데이트해요</div>
+    <button class="sb" onclick="loadData()">↺ 새로고침</button>
   </div>
 </div>
 
 <script>
-// CORS 프록시 여러 개 — 하나 실패하면 다음으로 자동 시도
-const PROXIES = [
-  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
-  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
-  url => `https://thingproxy.freeboard.io/fetch/${url}`,
-];
-
 const PRES=['#6b6ef9','#f43f5e','#10b981','#f59e0b','#3b82f6','#a855f7','#ec4899','#0d9488'];
-let C={tok:'',dbId:'',dp:'날짜',ip:'파일과 미디어',dbTitle:'',acc:'#6b6ef9',r:8,dark:false,mon:false};
-let Y=new Date().getFullYear(),M=new Date().getMonth(),cache={};
+let C={acc:'#6b6ef9',r:8,dark:false,mon:false};
+let Y=new Date().getFullYear(),M=new Date().getMonth();
+let allEntries=[],dbTitle='';
 let mo={imgs:[],idx:0,t:'',d:''};
 
-function sv(){try{localStorage.setItem('icw5',JSON.stringify(C));}catch(e){}}
-function ld(){try{const s=localStorage.getItem('icw5');if(s){Object.assign(C,JSON.parse(s));return true;}}catch(e){}return false;}
-function exId(s){const m=s.match(/[0-9a-f]{32}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);return m?m[0].replace(/-/g,''):null;}
-function fId(id){return id.includes('-')?id:`${id.slice(0,8)}-${id.slice(8,12)}-${id.slice(12,16)}-${id.slice(16,20)}-${id.slice(20)}`;}
-
-// 프록시 순서대로 시도 — 성공하면 반환
-async function nReq(path, body, tok) {
-  const notionUrl = 'https://api.notion.com/v1/' + path;
-  const headers = {
-    'Authorization': 'Bearer ' + (tok || C.tok),
-    'Notion-Version': '2022-06-28',
-    'Content-Type': 'application/json'
-  };
-  let lastErr;
-  for (const mkProxy of PROXIES) {
-    try {
-      const proxyUrl = mkProxy(notionUrl);
-      const r = await fetch(proxyUrl, {
-        method: body ? 'POST' : 'GET',
-        headers,
-        body: body ? JSON.stringify(body) : undefined
-      });
-      if (!r.ok) {
-        const e = await r.json().catch(() => ({}));
-        throw new Error(e.message || 'HTTP ' + r.status);
-      }
-      return await r.json();
-    } catch(e) {
-      lastErr = e;
-      // 네트워크 에러면 다음 프록시 시도, API 에러면 즉시 throw
-      if (e.message && !e.message.includes('fetch')) throw e;
-    }
-  }
-  throw lastErr || new Error('모든 프록시 연결 실패');
-}
-
-async function connect(){
-  const tok=document.getElementById('tok').value.trim();
-  const url=document.getElementById('dbu').value.trim();
-  const dp=document.getElementById('dp').value.trim();
-  const ip=document.getElementById('ip').value.trim();
-  hideErr();
-  if(!tok){showErr('토큰을 입력해주세요 (ntn_xxx 또는 secret_xxx)');return;}
-  if(!url){showErr('DB URL을 입력해주세요');return;}
-  const id=exId(url);
-  if(!id){showErr('URL에서 DB ID를 찾을 수 없어요');return;}
-  const btn=document.getElementById('cb');
-  btn.disabled=true;btn.textContent='연결 확인 중...';
-  try{
-    const meta=await nReq('databases/'+fId(id),null,tok);
-    C.tok=tok;C.dbId=id;C.dp=dp||'날짜';C.ip=ip||'파일과 미디어';
-    C.dbTitle=meta.title?.[0]?.plain_text||'Notion DB';
-    sv();showCal();
-  }catch(e){
-    let msg=e.message||'알 수 없는 오류';
-    if(msg.includes('object_not_found')||msg.includes('404'))
-      msg='DB를 찾을 수 없어요\n→ DB에서 ··· → Connections → 통합 추가했나요? (2단계)';
-    else if(msg.includes('unauthorized')||msg.includes('401'))
-      msg='토큰이 잘못됐어요\n→ notion.so/my-integrations에서 토큰 다시 복사해주세요';
-    showErr('연결 실패: '+msg);
-    btn.disabled=false;btn.textContent='연결하기 →';
-  }
-}
-
-function showErr(m){const el=document.getElementById('err');el.style.display='block';el.textContent=m;}
-function hideErr(){document.getElementById('err').style.display='none';}
-
-function gDate(p){
-  if(!p)return null;
-  if(p.type==='date'&&p.date)return p.date.start?.slice(0,10);
-  if(p.type==='created_time')return p.created_time?.slice(0,10);
-  if(p.type==='last_edited_time')return p.last_edited_time?.slice(0,10);
-  return null;
-}
-function gImgs(p){
-  if(!p||p.type!=='files')return[];
-  return p.files.map(f=>f.type==='external'?f.external?.url:f.file?.url).filter(Boolean);
-}
-function gTitle(page){
-  for(const v of Object.values(page.properties)){
-    if(v.type==='title'&&v.title?.length)return v.title.map(t=>t.plain_text).join('');
-  }
-  return '(제목 없음)';
-}
-
-async function fetchM(y,m){
-  const k=`${y}-${m}`;if(cache[k])return;
-  const pad=n=>String(n).padStart(2,'0');
-  const s=`${y}-${pad(m+1)}-01`,e=`${y}-${pad(m+1)}-${new Date(y,m+1,0).getDate()}`;
-  const data=await nReq('databases/'+fId(C.dbId)+'/query',{
-    page_size:100,
-    filter:{and:[{property:C.dp,date:{on_or_after:s}},{property:C.dp,date:{on_or_before:e}}]}
-  });
-  cache[k]=data.results.map(p=>({
-    date:gDate(p.properties[C.dp]),
-    imgs:gImgs(p.properties[C.ip]),
-    title:gTitle(p)
-  })).filter(e=>e.date);
-}
+function sv(){try{localStorage.setItem('icw_s',JSON.stringify(C));}catch(e){}}
+function ld(){try{const s=localStorage.getItem('icw_s');if(s)Object.assign(C,JSON.parse(s));}catch(e){}}
 
 function applyT(){
   document.documentElement.style.setProperty('--acc',C.acc);
@@ -303,108 +131,76 @@ function applyT(){
   C.dark?document.documentElement.setAttribute('data-dark',''):document.documentElement.removeAttribute('data-dark');
 }
 
-function showCal(){
-  document.getElementById('setup').style.display='none';
-  document.getElementById('app').style.display='block';
-  applyT();buildDH();renderCal();
-}
-
-function goSetup(){
-  closeS();
-  document.getElementById('setup').style.display='flex';
-  document.getElementById('app').style.display='none';
-  document.getElementById('tok').value=C.tok;
-  document.getElementById('dbu').value=C.dbId?`https://www.notion.so/${C.dbId}`:'';
-  document.getElementById('dp').value=C.dp;
-  document.getElementById('ip').value=C.ip;
-  document.getElementById('cb').disabled=false;
-  document.getElementById('cb').textContent='연결하기 →';
+async function loadData(){
+  document.getElementById('lmsg').style.display='block';
+  document.getElementById('lmsg').innerHTML='<span class="spin"></span>불러오는 중...';
+  try{
+    const r=await fetch('data.json?t='+Date.now());
+    const d=await r.json();
+    allEntries=d.entries||[];
+    dbTitle=d.dbTitle||'이미지 캘린더';
+    const upd=d.updatedAt?new Date(d.updatedAt).toLocaleString('ko-KR',{month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit'}):'';
+    document.getElementById('ftxt').textContent=dbTitle+(upd?' · '+upd+' 동기화':'');
+    document.getElementById('lmsg').style.display='none';
+    renderCal();
+  }catch(e){
+    document.getElementById('lmsg').innerHTML='❗ data.json을 불러올 수 없어요. GitHub Actions가 실행됐는지 확인해주세요.';
+  }
 }
 
 function buildDH(){
   const days=C.mon?['월','화','수','목','금','토','일']:['일','월','화','수','목','금','토'];
   const row=document.getElementById('drow');row.innerHTML='';
-  days.forEach((d,i)=>{
-    const el=document.createElement('div');
-    const sun=C.mon?i===6:i===0,sat=C.mon?i===5:i===6;
-    el.className='dh'+(sun?' sun':'')+(sat?' sat':'');el.textContent=d;row.appendChild(el);
-  });
+  days.forEach((d,i)=>{const el=document.createElement('div');const sun=C.mon?i===6:i===0,sat=C.mon?i===5:i===6;el.className='dh'+(sun?' sun':'')+(sat?' sat':'');el.textContent=d;row.appendChild(el);});
 }
 
-async function renderCal(){
+function renderCal(){
   const ko=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-  document.getElementById('htitle').innerHTML=`${ko[M]} <span>${Y}</span>`;
-  document.getElementById('ftxt').textContent=C.dbTitle+' 연동됨';
-  const grid=document.getElementById('grid'),lmsg=document.getElementById('lmsg');
-  grid.innerHTML='';lmsg.style.display='block';lmsg.innerHTML='<span class="spin"></span>불러오는 중...';
-  try{await fetchM(Y,M);}
-  catch(e){lmsg.innerHTML='❗ '+e.message;return;}
-  lmsg.style.display='none';
-
-  const td=new Date(),tds=`${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
+  document.getElementById('htitle').innerHTML=ko[M]+' <span>'+Y+'</span>';
+  const grid=document.getElementById('grid');grid.innerHTML='';
+  const td=new Date(),tds=td.getFullYear()+'-'+String(td.getMonth()+1).padStart(2,'0')+'-'+String(td.getDate()).padStart(2,'0');
   const first=new Date(Y,M,1).getDay(),off=C.mon?(first===0?6:first-1):first,last=new Date(Y,M+1,0).getDate();
-  const entries=cache[`${Y}-${M}`]||[],dm={};
-  entries.forEach(e=>{if(!dm[e.date])dm[e.date]=[];dm[e.date].push(e);});
+
+  // 이번 달 entries만
+  const prefix=Y+'-'+String(M+1).padStart(2,'0')+'-';
+  const dm={};
+  allEntries.filter(e=>e.date&&e.date.startsWith(prefix)).forEach(e=>{
+    if(!dm[e.date])dm[e.date]=[];dm[e.date].push(e);
+  });
 
   for(let i=0;i<off;i++){const el=document.createElement('div');el.className='cell empty';grid.appendChild(el);}
   for(let d=1;d<=last;d++){
-    const ds=`${Y}-${String(M+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const ds=prefix+String(d).padStart(2,'0');
     const dow=(off+d-1)%7,sun=C.mon?dow===6:dow===0,sat=C.mon?dow===5:dow===6,isT=ds===tds;
     const es=dm[ds]||[],imgs=es.flatMap(e=>e.imgs);
     const cell=document.createElement('div');
     cell.className='cell'+(sun?' sun':'')+(sat?' sat':'')+(isT?' today':'')+(imgs.length?' hi':'');
     const dn=document.createElement('span');dn.className='dn';dn.textContent=d;cell.appendChild(dn);
     if(imgs.length){
-      const img=document.createElement('img');img.src=imgs[0];img.alt='';
-      img.onerror=()=>img.style.display='none';
-      cell.appendChild(img);
+      const img=document.createElement('img');img.src=imgs[0];img.alt='';img.onerror=()=>img.style.display='none';cell.appendChild(img);
       let hi=null,hx=0;
-      cell.addEventListener('mouseenter',()=>{
-        if(imgs.length>1){hi=setInterval(()=>{hx=(hx+1)%imgs.length;img.style.opacity='0';setTimeout(()=>{img.src=imgs[hx];img.style.opacity='1';},200);},900);}
-      });
+      cell.addEventListener('mouseenter',()=>{if(imgs.length>1){hi=setInterval(()=>{hx=(hx+1)%imgs.length;img.style.opacity='0';setTimeout(()=>{img.src=imgs[hx];img.style.opacity='1';},200);},900);}});
       cell.addEventListener('mouseleave',()=>{clearInterval(hi);hx=0;img.style.opacity='0';setTimeout(()=>{img.src=imgs[0];img.style.opacity='1';},200);});
       if(imgs.length>1){const b=document.createElement('div');b.className='mbadge';b.textContent='+'+(imgs.length-1);cell.appendChild(b);}
       cell.addEventListener('click',()=>openMo(imgs,es.map(e=>e.title).join(', '),ds));
-    }else if(isT){
-      const dot=document.createElement('div');dot.className='tdot';cell.appendChild(dot);
-    }
+    }else if(isT){const dot=document.createElement('div');dot.className='tdot';cell.appendChild(dot);}
     grid.appendChild(cell);
   }
 }
 
-async function nav(d){M+=d;if(M>11){M=0;Y++;}if(M<0){M=11;Y--;}await renderCal();}
-async function goT(){Y=new Date().getFullYear();M=new Date().getMonth();await renderCal();}
-async function refresh(){cache={};await renderCal();closeS();}
-function reset(){if(!confirm('전체 초기화할까요?'))return;localStorage.removeItem('icw5');location.reload();}
-
+function nav(d){M+=d;if(M>11){M=0;Y++;}if(M<0){M=11;Y--;}renderCal();}
+function goT(){Y=new Date().getFullYear();M=new Date().getMonth();renderCal();}
 function openMo(imgs,t,d){mo={imgs,idx:0,t,d};updMo();document.getElementById('ov').classList.add('open');}
-function updMo(){
-  document.getElementById('mi').src=mo.imgs[mo.idx];
-  document.getElementById('mt').textContent=mo.t;
-  document.getElementById('md').textContent=mo.d;
-  document.getElementById('mii').textContent=`${mo.idx+1}/${mo.imgs.length}`;
-  document.getElementById('mp').disabled=mo.idx===0;
-  document.getElementById('mn').disabled=mo.idx===mo.imgs.length-1;
-}
+function updMo(){document.getElementById('mi').src=mo.imgs[mo.idx];document.getElementById('mt').textContent=mo.t;document.getElementById('md').textContent=mo.d;document.getElementById('mii').textContent=(mo.idx+1)+'/'+mo.imgs.length;document.getElementById('mp').disabled=mo.idx===0;document.getElementById('mn').disabled=mo.idx===mo.imgs.length-1;}
 function moN(d){mo.idx=Math.max(0,Math.min(mo.imgs.length-1,mo.idx+d));updMo();}
 function closeMo(){document.getElementById('ov').classList.remove('open');}
-
-function openS(){
-  const cp=document.getElementById('cpr');cp.innerHTML='';
-  PRES.forEach(c=>{const d=document.createElement('div');d.className='cd'+(C.acc===c?' on':'');d.style.background=c;d.onclick=()=>{C.acc=c;applyT();sv();cp.querySelectorAll('.cd').forEach(x=>x.classList.remove('on'));d.classList.add('on');};cp.appendChild(d);});
-  document.getElementById('rr').value=C.r;
-  document.getElementById('dkt').checked=C.dark;
-  document.getElementById('mnt').checked=C.mon;
-  document.getElementById('wsl').textContent=C.mon?'월요일':'일요일';
-  document.getElementById('sp').style.display='block';
-  document.getElementById('sov').classList.add('open');
-}
+function openS(){const cp=document.getElementById('cpr');cp.innerHTML='';PRES.forEach(c=>{const d=document.createElement('div');d.className='cd'+(C.acc===c?' on':'');d.style.background=c;d.onclick=()=>{C.acc=c;applyT();sv();cp.querySelectorAll('.cd').forEach(x=>x.classList.remove('on'));d.classList.add('on');};cp.appendChild(d);});document.getElementById('rr').value=C.r;document.getElementById('dkt').checked=C.dark;document.getElementById('mnt').checked=C.mon;document.getElementById('wsl').textContent=C.mon?'월요일':'일요일';document.getElementById('sp').style.display='block';document.getElementById('sov').classList.add('open');}
 function closeS(){document.getElementById('sp').style.display='none';document.getElementById('sov').classList.remove('open');}
 function setR(v){C.r=parseInt(v);document.documentElement.style.setProperty('--r',v+'px');sv();}
 function setDk(v){C.dark=v;applyT();sv();}
 function setMon(v){C.mon=v;document.getElementById('wsl').textContent=v?'월요일':'일요일';buildDH();renderCal();sv();}
 
-(function(){if(ld()&&C.tok&&C.dbId)showCal();})();
+ld();applyT();buildDH();loadData();
 </script>
 </body>
 </html>
