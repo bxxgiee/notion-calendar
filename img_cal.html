@@ -10,14 +10,11 @@
 [data-dark]{--bg:#191919;--sf:#252525;--bd:#333;--tx:#ececec;--t2:#888;--t3:#444;}
 *{box-sizing:border-box;margin:0;padding:0;}
 html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-serif;font-size:14px;}
-
-/* ── SETUP ── */
 .setup{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:20px;}
 .box{width:100%;max-width:360px;background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:28px 24px;}
 .logo{font-size:28px;margin-bottom:10px;}
 .box h1{font-size:17px;font-weight:600;margin-bottom:5px;letter-spacing:-.3px;}
 .box .sub{font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:20px;}
-
 .steps{margin-bottom:20px;display:flex;flex-direction:column;gap:8px;}
 .step-item{display:flex;gap:10px;align-items:flex-start;padding:10px 12px;background:var(--bg);border:1px solid var(--bd);border-radius:8px;}
 .step-num{width:20px;height:20px;border-radius:50%;background:var(--acc);color:#fff;font-size:10px;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px;}
@@ -25,7 +22,6 @@ html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-s
 .step-item p strong{color:var(--tx);font-weight:600;}
 .step-item p a{color:var(--acc);text-decoration:none;}
 .step-item p code{background:var(--sf);border:1px solid var(--bd);padding:1px 4px;border-radius:3px;font-size:10px;}
-
 .fld{margin-bottom:12px;}
 .fld label{display:flex;align-items:center;justify-content:space-between;font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--t2);margin-bottom:6px;}
 .fld label span{font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3);}
@@ -36,10 +32,7 @@ html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-s
 .divider::before,.divider::after{content:'';flex:1;height:1px;background:var(--bd);}
 .btn{width:100%;padding:12px;background:var(--acc);color:#fff;border:none;border-radius:var(--r);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;transition:opacity .2s;}
 .btn:hover{opacity:.88;}.btn:disabled{opacity:.5;cursor:not-allowed;}
-.err{font-size:12px;color:#e05555;background:rgba(224,85,85,.08);padding:9px 12px;border-radius:6px;margin-top:10px;line-height:1.5;}
-.saved-badge{display:inline-flex;align-items:center;gap:4px;font-size:10px;color:#27ae60;background:rgba(39,174,96,.1);padding:2px 7px;border-radius:10px;}
-
-/* ── CALENDAR ── */
+.err{font-size:12px;color:#e05555;background:rgba(224,85,85,.08);padding:9px 12px;border-radius:6px;margin-top:10px;line-height:1.6;}
 #app{display:none;padding:10px;}
 .hd{display:flex;align-items:center;gap:6px;padding:10px 12px;background:var(--sf);border:1px solid var(--bd);border-radius:10px 10px 0 0;margin-bottom:2px;}
 .hd-t{flex:1;font-size:14px;font-weight:600;letter-spacing:-.3px;}
@@ -69,8 +62,6 @@ html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-s
 .ft{padding:6px 2px 0;display:flex;align-items:center;gap:5px;}
 .ft .live{width:5px;height:5px;background:#27ae60;border-radius:50%;}
 .ft span{font-size:10px;color:var(--t2);}
-
-/* ── MODAL ── */
 .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.8);z-index:100;align-items:center;justify-content:center;cursor:pointer;}
 .ov.open{display:flex;}
 .mo{background:var(--bg);border-radius:14px;overflow:hidden;width:90%;max-width:320px;cursor:default;}
@@ -82,8 +73,6 @@ html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-s
 .mo-n button{flex:1;padding:8px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;font-family:inherit;font-size:12px;cursor:pointer;color:var(--tx);}
 .mo-n button:disabled{opacity:.3;cursor:default;}
 .mo-n .mo-i{flex:0 0 36px;text-align:center;font-size:11px;color:var(--t2);}
-
-/* ── SETTINGS ── */
 .sov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;}
 .sov.open{display:block;}
 .sp{position:fixed;right:0;top:0;height:100%;width:240px;background:var(--bg);border-left:1px solid var(--bd);padding:16px 14px;overflow-y:auto;z-index:201;}
@@ -108,7 +97,6 @@ html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-s
 </head>
 <body>
 
-<!-- SETUP -->
 <div class="setup" id="setup">
   <div class="box">
     <div class="logo">🗓</div>
@@ -118,7 +106,7 @@ html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-s
     <div class="steps">
       <div class="step-item">
         <div class="step-num">1</div>
-        <p><strong><a href="https://www.notion.so/my-integrations" target="_blank">notion.so/my-integrations</a></strong>에서 통합 만들기 → Internal Integration Token 복사</p>
+        <p><a href="https://www.notion.so/my-integrations" target="_blank"><strong>notion.so/my-integrations</strong></a> → 통합 만들기 → <strong>토큰 복사</strong></p>
       </div>
       <div class="step-item">
         <div class="step-num">2</div>
@@ -126,13 +114,13 @@ html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-s
       </div>
       <div class="step-item">
         <div class="step-num">3</div>
-        <p>아래에 토큰과 DB 주소 입력 → 저장 후 다시는 안 물어봐요</p>
+        <p>아래 입력 후 연결 → <strong>다시는 안 물어봐요</strong></p>
       </div>
     </div>
 
     <div class="fld">
-      <label>Integration Token <span id="token-saved-badge"></span></label>
-      <input id="tok" type="password" placeholder="secret_xxxxxxxxxxxxxxxxxxxx"/>
+      <label>Integration Token</label>
+      <input id="tok" type="password" placeholder="ntn_xxxx 또는 secret_xxxx"/>
     </div>
     <div class="divider">DB 정보</div>
     <div class="fld">
@@ -153,13 +141,12 @@ html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-s
   </div>
 </div>
 
-<!-- CALENDAR -->
 <div id="app">
   <div class="hd">
     <div class="hd-t" id="htitle"></div>
     <button class="nb" onclick="nav(-1)">←</button>
     <button class="nb" onclick="nav(1)">→</button>
-    <button class="nb" onclick="goT()" title="오늘">·</button>
+    <button class="nb" onclick="goT()">·</button>
     <button class="cfgb" onclick="openS()">⚙</button>
   </div>
   <div class="drow" id="drow"></div>
@@ -168,7 +155,6 @@ html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-s
   <div class="ft"><div class="live"></div><span id="ftxt"></span></div>
 </div>
 
-<!-- MODAL -->
 <div class="ov" id="ov" onclick="closeMo()">
   <div class="mo" onclick="event.stopPropagation()">
     <img id="mi" src="" alt="">
@@ -184,7 +170,6 @@ html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-s
   </div>
 </div>
 
-<!-- SETTINGS -->
 <div class="sov" id="sov" onclick="closeS()"></div>
 <div class="sp" id="sp" style="display:none">
   <h3>설정 <button class="xb" onclick="closeS()">✕</button></h3>
@@ -200,26 +185,52 @@ html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-s
 </div>
 
 <script>
-const PROXY='https://corsproxy.io/?url=';
+// CORS 프록시 여러 개 — 하나 실패하면 다음으로 자동 시도
+const PROXIES = [
+  url => `https://api.allorigins.win/raw?url=${encodeURIComponent(url)}`,
+  url => `https://corsproxy.io/?${encodeURIComponent(url)}`,
+  url => `https://thingproxy.freeboard.io/fetch/${url}`,
+];
+
 const PRES=['#6b6ef9','#f43f5e','#10b981','#f59e0b','#3b82f6','#a855f7','#ec4899','#0d9488'];
 let C={tok:'',dbId:'',dp:'날짜',ip:'파일과 미디어',dbTitle:'',acc:'#6b6ef9',r:8,dark:false,mon:false};
 let Y=new Date().getFullYear(),M=new Date().getMonth(),cache={};
 let mo={imgs:[],idx:0,t:'',d:''};
 
-function sv(){try{localStorage.setItem('icw4',JSON.stringify(C));}catch(e){}}
-function ld(){try{const s=localStorage.getItem('icw4');if(s){Object.assign(C,JSON.parse(s));return true;}}catch(e){}return false;}
+function sv(){try{localStorage.setItem('icw5',JSON.stringify(C));}catch(e){}}
+function ld(){try{const s=localStorage.getItem('icw5');if(s){Object.assign(C,JSON.parse(s));return true;}}catch(e){}return false;}
 function exId(s){const m=s.match(/[0-9a-f]{32}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);return m?m[0].replace(/-/g,''):null;}
 function fId(id){return id.includes('-')?id:`${id.slice(0,8)}-${id.slice(8,12)}-${id.slice(12,16)}-${id.slice(16,20)}-${id.slice(20)}`;}
 
-async function nReq(path,body,tok){
-  const url=PROXY+encodeURIComponent('https://api.notion.com/v1/'+path);
-  const r=await fetch(url,{
-    method:body?'POST':'GET',
-    headers:{'Authorization':'Bearer '+(tok||C.tok),'Notion-Version':'2022-06-28','Content-Type':'application/json'},
-    body:body?JSON.stringify(body):undefined
-  });
-  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||'HTTP '+r.status);}
-  return r.json();
+// 프록시 순서대로 시도 — 성공하면 반환
+async function nReq(path, body, tok) {
+  const notionUrl = 'https://api.notion.com/v1/' + path;
+  const headers = {
+    'Authorization': 'Bearer ' + (tok || C.tok),
+    'Notion-Version': '2022-06-28',
+    'Content-Type': 'application/json'
+  };
+  let lastErr;
+  for (const mkProxy of PROXIES) {
+    try {
+      const proxyUrl = mkProxy(notionUrl);
+      const r = await fetch(proxyUrl, {
+        method: body ? 'POST' : 'GET',
+        headers,
+        body: body ? JSON.stringify(body) : undefined
+      });
+      if (!r.ok) {
+        const e = await r.json().catch(() => ({}));
+        throw new Error(e.message || 'HTTP ' + r.status);
+      }
+      return await r.json();
+    } catch(e) {
+      lastErr = e;
+      // 네트워크 에러면 다음 프록시 시도, API 에러면 즉시 throw
+      if (e.message && !e.message.includes('fetch')) throw e;
+    }
+  }
+  throw lastErr || new Error('모든 프록시 연결 실패');
 }
 
 async function connect(){
@@ -228,7 +239,7 @@ async function connect(){
   const dp=document.getElementById('dp').value.trim();
   const ip=document.getElementById('ip').value.trim();
   hideErr();
-  if(!tok){showErr('Integration Token을 입력해주세요 (secret_xxx...)');return;}
+  if(!tok){showErr('토큰을 입력해주세요 (ntn_xxx 또는 secret_xxx)');return;}
   if(!url){showErr('DB URL을 입력해주세요');return;}
   const id=exId(url);
   if(!id){showErr('URL에서 DB ID를 찾을 수 없어요');return;}
@@ -240,10 +251,12 @@ async function connect(){
     C.dbTitle=meta.title?.[0]?.plain_text||'Notion DB';
     sv();showCal();
   }catch(e){
-    let msg='연결 실패: '+e.message;
-    if(e.message.includes('object_not_found')||e.message.includes('404')) msg='DB를 찾을 수 없어요 — Connections에 통합이 추가됐는지 확인해주세요 (설정 2단계)';
-    if(e.message.includes('unauthorized')||e.message.includes('401')) msg='토큰이 잘못됐어요 — notion.so/my-integrations에서 다시 복사해주세요';
-    showErr(msg);
+    let msg=e.message||'알 수 없는 오류';
+    if(msg.includes('object_not_found')||msg.includes('404'))
+      msg='DB를 찾을 수 없어요\n→ DB에서 ··· → Connections → 통합 추가했나요? (2단계)';
+    else if(msg.includes('unauthorized')||msg.includes('401'))
+      msg='토큰이 잘못됐어요\n→ notion.so/my-integrations에서 토큰 다시 복사해주세요';
+    showErr('연결 실패: '+msg);
     btn.disabled=false;btn.textContent='연결하기 →';
   }
 }
@@ -304,9 +317,8 @@ function goSetup(){
   document.getElementById('dbu').value=C.dbId?`https://www.notion.so/${C.dbId}`:'';
   document.getElementById('dp').value=C.dp;
   document.getElementById('ip').value=C.ip;
-  if(C.tok){
-    document.getElementById('token-saved-badge').innerHTML='<span class="saved-badge">✓ 저장됨</span>';
-  }
+  document.getElementById('cb').disabled=false;
+  document.getElementById('cb').textContent='연결하기 →';
 }
 
 function buildDH(){
@@ -363,7 +375,7 @@ async function renderCal(){
 async function nav(d){M+=d;if(M>11){M=0;Y++;}if(M<0){M=11;Y--;}await renderCal();}
 async function goT(){Y=new Date().getFullYear();M=new Date().getMonth();await renderCal();}
 async function refresh(){cache={};await renderCal();closeS();}
-function reset(){if(!confirm('전체 초기화할까요?'))return;localStorage.removeItem('icw4');location.reload();}
+function reset(){if(!confirm('전체 초기화할까요?'))return;localStorage.removeItem('icw5');location.reload();}
 
 function openMo(imgs,t,d){mo={imgs,idx:0,t,d};updMo();document.getElementById('ov').classList.add('open');}
 function updMo(){
@@ -392,12 +404,7 @@ function setR(v){C.r=parseInt(v);document.documentElement.style.setProperty('--r
 function setDk(v){C.dark=v;applyT();sv();}
 function setMon(v){C.mon=v;document.getElementById('wsl').textContent=v?'월요일':'일요일';buildDH();renderCal();sv();}
 
-// INIT
-(function(){
-  if(ld()&&C.tok&&C.dbId){
-    showCal();
-  }
-})();
+(function(){if(ld()&&C.tok&&C.dbId)showCal();})();
 </script>
 </body>
 </html>
