@@ -3,894 +3,289 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Image Calendar Widget</title>
-<link href="https://fonts.googleapis.com/css2?family=Gowun+Dodum&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@400;600&display=swap" rel="stylesheet">
+<title>이미지 캘린더</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --bg: #faf9f7;
-    --surface: #ffffff;
-    --surface2: #f3f2ef;
-    --text: #1c1c1e;
-    --text2: #8e8e93;
-    --text3: #c7c7cc;
-    --accent: #6b6ef9;
-    --accent-soft: rgba(107,110,249,0.12);
-    --border: #e8e7e3;
-    --shadow: 0 2px 12px rgba(0,0,0,0.06);
-    --shadow-lg: 0 8px 32px rgba(0,0,0,0.12);
-    --radius: 10px;
-    --font: 'Plus Jakarta Sans', 'Gowun Dodum', sans-serif;
-    --today-ring: var(--accent);
-    --header-bg: var(--surface);
-  }
-  [data-dark="true"] {
-    --bg: #111116;
-    --surface: #1c1c24;
-    --surface2: #25252f;
-    --text: #f0f0f5;
-    --text2: #8e8e9a;
-    --text3: #44444e;
-    --border: #2c2c38;
-    --shadow: 0 2px 12px rgba(0,0,0,0.3);
-    --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
-    --header-bg: #17171f;
-  }
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body { height: 100%; }
-  body {
-    font-family: var(--font);
-    background: var(--bg);
-    color: var(--text);
-    transition: background 0.3s, color 0.3s;
-    min-height: 100vh;
-  }
-
-  /* ── SETUP SCREEN ── */
-  .screen { min-height: 100vh; display: flex; align-items: center; justify-content: center; padding: 24px; }
-  .setup-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 48px 40px;
-    width: 100%; max-width: 460px;
-    box-shadow: var(--shadow-lg);
-    text-align: center;
-  }
-  .setup-icon { font-size: 48px; margin-bottom: 16px; }
-  .setup-card h1 { font-size: 22px; font-weight: 700; margin-bottom: 8px; letter-spacing: -0.3px; }
-  .setup-card .desc { font-size: 14px; color: var(--text2); line-height: 1.7; margin-bottom: 32px; }
-  .form-group { text-align: left; margin-bottom: 20px; }
-  .form-group label { font-size: 12px; font-weight: 600; color: var(--text2); letter-spacing: 0.5px; text-transform: uppercase; display: block; margin-bottom: 8px; }
-  .form-group input, .form-group select {
-    width: 100%; padding: 12px 16px;
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    color: var(--text);
-    font-family: var(--font);
-    font-size: 14px;
-    outline: none;
-    transition: border-color 0.2s;
-  }
-  .form-group input:focus, .form-group select:focus { border-color: var(--accent); }
-  .form-group input::placeholder { color: var(--text3); }
-  .btn-primary {
-    width: 100%;
-    padding: 14px;
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: var(--radius);
-    font-family: var(--font);
-    font-size: 15px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s, transform 0.1s;
-  }
-  .btn-primary:hover { opacity: 0.9; }
-  .btn-primary:active { transform: scale(0.98); }
-  .btn-secondary {
-    padding: 10px 20px;
-    background: var(--surface2);
-    color: var(--text);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    font-family: var(--font);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .btn-secondary:hover { background: var(--border); }
-  .error-msg { font-size: 13px; color: #ef4444; margin-top: 12px; background: rgba(239,68,68,0.08); padding: 10px 14px; border-radius: 8px; }
-
-  /* ── LOADING ── */
-  .loading-screen { flex-direction: column; gap: 16px; }
-  .spinner {
-    width: 36px; height: 36px;
-    border: 3px solid var(--border);
-    border-top-color: var(--accent);
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-  }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .loading-text { font-size: 14px; color: var(--text2); }
-
-  /* ── CONFIG SCREEN ── */
-  .config-card {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: 20px;
-    padding: 40px;
-    width: 100%; max-width: 520px;
-    box-shadow: var(--shadow-lg);
-  }
-  .config-card h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; }
-  .config-card .db-name { font-size: 13px; color: var(--accent); margin-bottom: 28px; font-weight: 500; }
-  .prop-list { display: flex; flex-direction: column; gap: 10px; margin-bottom: 16px; }
-  .prop-item {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 14px;
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-    user-select: none;
-  }
-  .prop-item.selected { border-color: var(--accent); background: var(--accent-soft); }
-  .prop-item input[type="checkbox"] { accent-color: var(--accent); width: 16px; height: 16px; cursor: pointer; }
-  .prop-item .prop-name { font-size: 14px; font-weight: 500; flex: 1; }
-  .prop-item .prop-type {
-    font-size: 11px; font-weight: 600;
-    color: var(--text2); background: var(--border);
-    padding: 2px 8px; border-radius: 4px; text-transform: uppercase; letter-spacing: 0.5px;
-  }
-  .section-label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.8px; margin-bottom: 10px; display: flex; align-items: center; gap: 6px; }
-  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
-  .form-row { display: flex; gap: 12px; margin-bottom: 20px; }
-  .form-row .form-group { flex: 1; }
-
-  /* ── CALENDAR ── */
-  #calendar-app { max-width: 960px; margin: 0 auto; padding: 24px; }
-  .cal-header {
-    display: flex; align-items: center; gap: 12px;
-    padding: 16px 20px;
-    background: var(--header-bg);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    margin-bottom: 12px;
-    box-shadow: var(--shadow);
-  }
-  .cal-title { flex: 1; font-size: 18px; font-weight: 700; letter-spacing: -0.3px; }
-  .cal-title span { color: var(--accent); margin-left: 6px; }
-  .nav-btn {
-    width: 36px; height: 36px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 16px; color: var(--text2);
-    transition: background 0.2s, color 0.2s;
-  }
-  .nav-btn:hover { background: var(--accent); color: white; border-color: var(--accent); }
-  .icon-btn {
-    width: 36px; height: 36px;
-    background: var(--surface2);
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 15px;
-    transition: background 0.2s;
-    color: var(--text2);
-  }
-  .icon-btn:hover { background: var(--border); }
-
-  /* Day headers */
-  .day-headers {
-    display: grid; grid-template-columns: repeat(7, 1fr);
-    gap: 4px; margin-bottom: 4px;
-  }
-  .day-header {
-    text-align: center;
-    font-size: 11px; font-weight: 700;
-    color: var(--text2); padding: 8px 0;
-    letter-spacing: 0.5px; text-transform: uppercase;
-  }
-  .day-header.sun { color: #ef4444; }
-  .day-header.sat { color: var(--accent); }
-
-  /* Calendar grid */
-  .cal-grid {
-    display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 4px;
-  }
-  .cal-cell {
-    aspect-ratio: 1;
-    border-radius: var(--radius);
-    overflow: hidden;
-    position: relative;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    transition: transform 0.15s, box-shadow 0.15s;
-    cursor: default;
-  }
-  .cal-cell.empty { background: transparent; border-color: transparent; }
-  .cal-cell.other-month { opacity: 0.35; }
-  .cal-cell.today { border: 2px solid var(--today-ring); }
-  .cal-cell.today .date-num { color: var(--accent); font-weight: 700; }
-  .cal-cell.has-image { cursor: pointer; }
-  .cal-cell.has-image:hover {
-    transform: scale(1.04);
-    box-shadow: var(--shadow-lg);
-    z-index: 10;
-  }
-  .date-num {
-    position: absolute;
-    top: 5px; left: 7px;
-    font-size: 11px; font-weight: 600;
-    color: var(--text2);
-    z-index: 3;
-    transition: color 0.2s;
-    line-height: 1;
-  }
-  .cal-cell.has-image .date-num {
-    color: white;
-    text-shadow: 0 1px 4px rgba(0,0,0,0.5);
-  }
-  .cal-cell img {
-    position: absolute; inset: 0;
-    width: 100%; height: 100%;
-    object-fit: cover;
-    display: block;
-    transition: opacity 0.4s ease;
-  }
-  .img-count {
-    position: absolute;
-    bottom: 4px; right: 5px;
-    background: rgba(0,0,0,0.5);
-    color: white;
-    font-size: 9px; font-weight: 700;
-    padding: 2px 5px;
-    border-radius: 4px;
-    z-index: 3;
-    backdrop-filter: blur(4px);
-  }
-  .sun-cell .date-num { color: #ef4444; }
-  .sat-cell .date-num { color: var(--accent); }
-  .cal-cell.has-image .sun-cell-label { color: white; }
-
-  /* ── SETTINGS PANEL ── */
-  .settings-overlay {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.4);
-    z-index: 100;
-    backdrop-filter: blur(4px);
-    animation: fadeIn 0.2s;
-  }
-  .settings-panel {
-    position: fixed;
-    top: 0; right: 0;
-    width: 320px; height: 100vh;
-    background: var(--surface);
-    border-left: 1px solid var(--border);
-    box-shadow: var(--shadow-lg);
-    z-index: 101;
-    overflow-y: auto;
-    animation: slideIn 0.25s ease;
-    padding: 28px 24px;
-  }
-  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes slideIn { from { transform: translateX(100%); } to { transform: translateX(0); } }
-  .settings-panel h3 { font-size: 16px; font-weight: 700; margin-bottom: 24px; display: flex; align-items: center; justify-content: space-between; }
-  .settings-close { background: none; border: none; font-size: 20px; cursor: pointer; color: var(--text2); }
-  .setting-row { margin-bottom: 20px; }
-  .setting-row label { font-size: 11px; font-weight: 700; color: var(--text2); text-transform: uppercase; letter-spacing: 0.6px; display: block; margin-bottom: 8px; }
-  .color-row { display: flex; align-items: center; gap: 10px; }
-  .color-row input[type="color"] {
-    width: 40px; height: 36px;
-    border: 1.5px solid var(--border);
-    border-radius: 8px; cursor: pointer;
-    background: none; padding: 2px;
-  }
-  .color-preview { font-size: 13px; color: var(--text2); font-weight: 500; }
-  .toggle-row { display: flex; align-items: center; justify-content: space-between; }
-  .toggle {
-    position: relative; width: 44px; height: 24px;
-  }
-  .toggle input { opacity: 0; width: 0; height: 0; }
-  .toggle-slider {
-    position: absolute; inset: 0;
-    background: var(--border);
-    border-radius: 24px;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  .toggle-slider::before {
-    content: '';
-    position: absolute;
-    width: 18px; height: 18px;
-    left: 3px; top: 3px;
-    background: white;
-    border-radius: 50%;
-    transition: transform 0.2s;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.2);
-  }
-  .toggle input:checked + .toggle-slider { background: var(--accent); }
-  .toggle input:checked + .toggle-slider::before { transform: translateX(20px); }
-  .font-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .font-opt {
-    padding: 10px 12px;
-    background: var(--surface2);
-    border: 1.5px solid var(--border);
-    border-radius: 8px;
-    cursor: pointer;
-    text-align: center;
-    font-size: 13px;
-    transition: border-color 0.2s;
-  }
-  .font-opt.active { border-color: var(--accent); color: var(--accent); font-weight: 600; }
-  .radius-row input[type="range"] { width: 100%; accent-color: var(--accent); }
-  .preset-colors { display: flex; gap: 8px; flex-wrap: wrap; }
-  .preset-dot {
-    width: 28px; height: 28px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: border-color 0.2s, transform 0.1s;
-  }
-  .preset-dot:hover, .preset-dot.active { border-color: var(--text); transform: scale(1.15); }
-
-  /* Image modal */
-  .img-modal {
-    position: fixed; inset: 0;
-    background: rgba(0,0,0,0.85);
-    z-index: 200;
-    display: flex; align-items: center; justify-content: center;
-    animation: fadeIn 0.2s;
-    cursor: pointer;
-  }
-  .img-modal img {
-    max-width: 90vw; max-height: 85vh;
-    object-fit: contain;
-    border-radius: 12px;
-    box-shadow: 0 20px 60px rgba(0,0,0,0.5);
-  }
-  .modal-info {
-    position: fixed; bottom: 24px;
-    left: 50%; transform: translateX(-50%);
-    background: rgba(0,0,0,0.7);
-    color: white;
-    padding: 10px 20px;
-    border-radius: 20px;
-    font-size: 13px;
-    backdrop-filter: blur(8px);
-  }
-  .today-dot {
-    position: absolute;
-    bottom: 4px; left: 50%; transform: translateX(-50%);
-    width: 5px; height: 5px;
-    border-radius: 50%;
-    background: var(--today-ring);
-    z-index: 3;
-  }
+  :root{--acc:#6b6ef9;--bg:#fff;--sf:#f7f7f5;--bd:#ebebea;--tx:#1c1c1e;--t2:#9b9b9b;--t3:#d0d0ce;--sun:#e05555;--sat:#5577ee;--r:8px;}
+  [data-dark]{--bg:#191919;--sf:#252525;--bd:#333;--tx:#ececec;--t2:#888;--t3:#444;}
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{background:var(--bg);color:var(--tx);font-family:'Noto Sans KR',sans-serif;font-size:14px;}
+  .setup{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .box{width:100%;max-width:360px;background:var(--sf);border:1px solid var(--bd);border-radius:16px;padding:30px 26px;}
+  .box h1{font-size:17px;font-weight:600;margin-bottom:5px;}
+  .box .sub{font-size:12px;color:var(--t2);line-height:1.6;margin-bottom:22px;}
+  .notice{background:var(--bg);border:1px solid var(--bd);border-radius:8px;padding:12px 14px;margin-bottom:18px;font-size:12px;color:var(--t2);line-height:1.7;}
+  .notice strong{color:var(--tx);font-weight:600;}
+  .notice code{background:var(--sf);border:1px solid var(--bd);padding:1px 5px;border-radius:4px;font-size:11px;}
+  .fld{margin-bottom:13px;}
+  .fld label{display:block;font-size:10px;font-weight:600;letter-spacing:.6px;text-transform:uppercase;color:var(--t2);margin-bottom:6px;}
+  .fld input{width:100%;padding:10px 12px;border:1.5px solid var(--bd);border-radius:var(--r);background:var(--bg);color:var(--tx);font-family:inherit;font-size:13px;outline:none;transition:border-color .2s;}
+  .fld input:focus{border-color:var(--acc);}
+  .fld input::placeholder{color:var(--t3);}
+  .btn{width:100%;padding:12px;background:var(--acc);color:#fff;border:none;border-radius:var(--r);font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;margin-top:4px;transition:opacity .2s;}
+  .btn:hover{opacity:.88;} .btn:disabled{opacity:.5;cursor:not-allowed;}
+  .err{font-size:12px;color:#e05555;background:rgba(224,85,85,.08);padding:9px 12px;border-radius:6px;margin-top:10px;}
+  #app{display:none;padding:12px;}
+  .hd{display:flex;align-items:center;gap:7px;padding:11px 13px;background:var(--sf);border:1px solid var(--bd);border-radius:12px 12px 0 0;margin-bottom:2px;}
+  .hd-t{flex:1;font-size:15px;font-weight:600;letter-spacing:-.3px;}
+  .hd-t span{color:var(--acc);font-weight:400;margin-left:4px;}
+  .nb{width:28px;height:28px;background:var(--bg);border:1px solid var(--bd);border-radius:6px;cursor:pointer;font-size:12px;color:var(--t2);display:flex;align-items:center;justify-content:center;transition:all .15s;}
+  .nb:hover{background:var(--acc);color:#fff;border-color:var(--acc);}
+  .drow{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:2px;}
+  .dh{text-align:center;font-size:9px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;padding:6px 0;color:var(--t2);}
+  .dh.sun{color:var(--sun);}.dh.sat{color:var(--sat);}
+  .grid{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;}
+  .cell{aspect-ratio:1;border-radius:var(--r);border:1px solid var(--bd);background:var(--bg);position:relative;overflow:hidden;}
+  .cell.empty{background:transparent;border-color:transparent;}
+  .cell.today{border:2px solid var(--acc);}
+  .cell.hi{cursor:pointer;transition:transform .12s,box-shadow .12s;}
+  .cell.hi:hover{transform:scale(1.06);z-index:5;box-shadow:0 4px 16px rgba(0,0,0,.15);}
+  .dn{position:absolute;top:4px;left:5px;font-size:9px;font-weight:500;color:var(--t2);z-index:3;line-height:1;}
+  .cell.today .dn{color:var(--acc);font-weight:700;}
+  .cell.sun .dn{color:var(--sun);}.cell.sat .dn{color:var(--sat);}
+  .cell.hi .dn{color:rgba(255,255,255,.9);text-shadow:0 1px 3px rgba(0,0,0,.6);}
+  .cell img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block;transition:opacity .25s;}
+  .mbadge{position:absolute;bottom:3px;right:3px;background:rgba(0,0,0,.5);color:#fff;font-size:8px;font-weight:700;padding:1px 4px;border-radius:3px;z-index:3;}
+  .tdot{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);width:4px;height:4px;border-radius:50%;background:var(--acc);z-index:2;}
+  .lmsg{text-align:center;padding:20px;font-size:12px;color:var(--t2);}
+  .spin{display:inline-block;width:16px;height:16px;border:2px solid var(--bd);border-top-color:var(--acc);border-radius:50%;animation:sp .7s linear infinite;vertical-align:middle;margin-right:6px;}
+  @keyframes sp{to{transform:rotate(360deg);}}
+  .ft{padding:7px 2px 0;display:flex;align-items:center;gap:6px;}
+  .ft .live{width:6px;height:6px;background:#27ae60;border-radius:50%;}
+  .ft span{font-size:11px;color:var(--t2);}
+  .cfgb{background:none;border:none;font-size:14px;cursor:pointer;color:var(--t2);width:28px;height:28px;display:flex;align-items:center;justify-content:center;}
+  .ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;align-items:center;justify-content:center;cursor:pointer;}
+  .ov.open{display:flex;}
+  .mo{background:var(--bg);border-radius:14px;overflow:hidden;width:90%;max-width:320px;cursor:default;}
+  .mo img{width:100%;aspect-ratio:1;object-fit:cover;display:block;background:var(--sf);}
+  .mo-b{padding:13px 15px 15px;}
+  .mo-t{font-size:14px;font-weight:600;margin-bottom:3px;}
+  .mo-d{font-size:11px;color:var(--t2);margin-bottom:11px;}
+  .mo-n{display:flex;align-items:center;gap:6px;}
+  .mo-n button{flex:1;padding:8px;background:var(--sf);border:1px solid var(--bd);border-radius:6px;font-family:inherit;font-size:12px;cursor:pointer;color:var(--tx);}
+  .mo-n button:disabled{opacity:.3;cursor:default;}
+  .mo-n .mo-i{flex:0 0 38px;text-align:center;font-size:11px;color:var(--t2);}
+  .sov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.35);z-index:200;}
+  .sov.open{display:block;}
+  .sp{position:fixed;right:0;top:0;height:100%;width:250px;background:var(--bg);border-left:1px solid var(--bd);padding:18px 15px;overflow-y:auto;z-index:201;}
+  .sp h3{font-size:14px;font-weight:600;margin-bottom:16px;display:flex;justify-content:space-between;}
+  .sp .xb{background:none;border:none;font-size:17px;cursor:pointer;color:var(--t2);}
+  .sr{margin-bottom:14px;}
+  .sr label{display:block;font-size:10px;font-weight:600;color:var(--t2);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;}
+  .cr{display:flex;gap:6px;flex-wrap:wrap;}
+  .cd{width:22px;height:22px;border-radius:50%;cursor:pointer;border:2px solid transparent;transition:border-color .15s,transform .1s;}
+  .cd:hover,.cd.on{border-color:var(--tx);transform:scale(1.2);}
+  .sr input[type=range]{width:100%;accent-color:var(--acc);}
+  .tr{display:flex;align-items:center;justify-content:space-between;}
+  .tgl{position:relative;width:36px;height:20px;}
+  .tgl input{opacity:0;width:0;height:0;}
+  .tsl{position:absolute;inset:0;background:var(--bd);border-radius:20px;cursor:pointer;transition:background .2s;}
+  .tsl::before{content:'';position:absolute;width:14px;height:14px;left:3px;top:3px;background:#fff;border-radius:50%;transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.2);}
+  .tgl input:checked+.tsl{background:var(--acc);}
+  .tgl input:checked+.tsl::before{transform:translateX(16px);}
+  .sb{width:100%;padding:9px;background:var(--sf);border:1px solid var(--bd);border-radius:var(--r);font-family:inherit;font-size:12px;cursor:pointer;color:var(--tx);margin-bottom:7px;}
+  .sb.red{color:#e05555;border-color:rgba(224,85,85,.3);}
 </style>
 </head>
 <body>
-<div id="root"></div>
+
+<div class="setup" id="setup">
+  <div class="box">
+    <h1>🗓 이미지 캘린더</h1>
+    <p class="sub">DB URL 하나만 넣으면 끝 — 토큰 필요 없어요</p>
+
+    <div class="notice">
+      <strong>⚠️ 먼저 한 번만 설정해주세요</strong><br>
+      노션 DB 우상단 <code>Share</code> → <code>Publish to web</code> 켜기<br>
+      (공개로 설정해야 토큰 없이 연결 가능해요)
+    </div>
+
+    <div class="fld">
+      <label>Notion Database URL</label>
+      <input id="dbu" type="text" placeholder="https://www.notion.so/..."/>
+    </div>
+    <div class="fld">
+      <label>날짜 속성 이름</label>
+      <input id="dp" type="text" value="날짜"/>
+    </div>
+    <div class="fld">
+      <label>이미지 속성 이름</label>
+      <input id="ip" type="text" value="파일과 미디어"/>
+    </div>
+
+    <div id="err" class="err" style="display:none"></div>
+    <button class="btn" id="cb" onclick="connect()">연결하기 →</button>
+  </div>
+</div>
+
+<div id="app">
+  <div class="hd">
+    <div class="hd-t" id="htitle"></div>
+    <button class="nb" onclick="nav(-1)">←</button>
+    <button class="nb" onclick="nav(1)">→</button>
+    <button class="nb" onclick="goT()">·</button>
+    <button class="cfgb" onclick="openS()">⚙</button>
+  </div>
+  <div class="drow" id="drow"></div>
+  <div class="grid" id="grid"></div>
+  <div id="lmsg" class="lmsg" style="display:none"></div>
+  <div class="ft"><div class="live"></div><span id="ftxt"></span></div>
+</div>
+
+<div class="ov" id="ov" onclick="closeMo()">
+  <div class="mo" onclick="event.stopPropagation()">
+    <img id="mi" src="" alt="">
+    <div class="mo-b">
+      <div class="mo-t" id="mt"></div>
+      <div class="mo-d" id="md"></div>
+      <div class="mo-n">
+        <button id="mp" onclick="moN(-1)">← 이전</button>
+        <span class="mo-i" id="mii"></span>
+        <button id="mn" onclick="moN(1)">다음 →</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="sov" id="sov" onclick="closeS()"></div>
+<div class="sp" id="sp" style="display:none">
+  <h3>설정 <button class="xb" onclick="closeS()">✕</button></h3>
+  <div class="sr"><label>강조 색상</label><div class="cr" id="cpr"></div></div>
+  <div class="sr"><label>모서리 둥글기</label><input type="range" min="0" max="16" id="rr" oninput="setR(this.value)"></div>
+  <div class="sr"><label>다크 모드</label><div class="tr"><span style="font-size:12px">🌙</span><label class="tgl"><input type="checkbox" id="dkt" onchange="setDk(this.checked)"><span class="tsl"></span></label></div></div>
+  <div class="sr"><label>주 시작</label><div class="tr"><span style="font-size:12px;color:var(--t2)" id="wsl">일요일</span><label class="tgl"><input type="checkbox" id="mnt" onchange="setMon(this.checked)"><span class="tsl"></span></label></div></div>
+  <div class="sr" style="border-top:1px solid var(--bd);padding-top:13px">
+    <button class="sb" onclick="refresh()">↺ 새로고침</button>
+    <button class="sb red" onclick="reset()">연결 초기화</button>
+  </div>
+</div>
 
 <script>
-// ─── STATE ───────────────────────────────────────────────
-const S = {
-  screen: 'setup', // setup | loading | config | calendar
-  dbId: '', dbTitle: '',
-  properties: [],
-  dateProperty: '',
-  imageProperties: [],
-  year: new Date().getFullYear(),
-  month: new Date().getMonth(),
-  cache: {}, // "YYYY-M" => [{date, images[], title, url, pageId}]
-  showSettings: false,
-  showModal: null, // {images[], title}
-  loading: false,
-  error: '',
-  configStep: 0,
-  theme: {
-    dark: false,
-    accent: '#6b6ef9',
-    bg: '#faf9f7',
-    bgDark: '#111116',
-    font: 'plus-jakarta',
-    radius: 10,
-    startMonday: false,
-  }
-};
+const PROXY='https://corsproxy.io/?url=';
+const PRES=['#6b6ef9','#f43f5e','#10b981','#f59e0b','#3b82f6','#a855f7','#ec4899','#0d9488'];
+let C={dbId:'',dp:'날짜',ip:'파일과 미디어',title:'',acc:'#6b6ef9',r:8,dark:false,mon:false};
+let Y=new Date().getFullYear(),M=new Date().getMonth(),cache={};
+let mo={imgs:[],idx:0,t:'',d:''};
 
-const FONTS = {
-  'plus-jakarta': "'Plus Jakarta Sans', 'Gowun Dodum', sans-serif",
-  'gowun': "'Gowun Dodum', sans-serif",
-  'noto-serif': "'Noto Serif KR', serif",
-  'system': "system-ui, -apple-system, sans-serif",
-};
-const FONT_LABELS = { 'plus-jakarta': 'Jakarta', 'gowun': 'Gowun', 'noto-serif': 'Noto Serif', 'system': 'System' };
-const ACCENT_PRESETS = ['#6b6ef9','#f43f5e','#10b981','#f59e0b','#3b82f6','#a855f7','#ec4899','#14b8a6'];
+function sv(){try{localStorage.setItem('icw3',JSON.stringify(C));}catch(e){}}
+function ld(){try{const s=localStorage.getItem('icw3');if(s){Object.assign(C,JSON.parse(s));return true;}}catch(e){}return false;}
+function exId(s){const m=s.match(/[0-9a-f]{32}|[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/i);return m?m[0].replace(/-/g,''):null;}
+function fId(id){return id.includes('-')?id:`${id.slice(0,8)}-${id.slice(8,12)}-${id.slice(12,16)}-${id.slice(16,20)}-${id.slice(20)}`;}
 
-// ─── STORAGE ─────────────────────────────────────────────
-async function saveConfig() {
-  try {
-    const config = {
-      dbId: S.dbId, dbTitle: S.dbTitle,
-      dateProperty: S.dateProperty,
-      imageProperties: S.imageProperties,
-      theme: S.theme,
-    };
-    await window.storage.set('notion_cal_config', JSON.stringify(config));
-  } catch(e) {}
-}
-async function loadConfig() {
-  try {
-    const r = await window.storage.get('notion_cal_config');
-    if (r && r.value) {
-      const c = JSON.parse(r.value);
-      Object.assign(S, c);
-      return true;
-    }
-  } catch(e) {}
-  return false;
+async function nReq(path,body){
+  const url=PROXY+encodeURIComponent('https://api.notion.com/v1/'+path);
+  const r=await fetch(url,{method:body?'POST':'GET',headers:{'Notion-Version':'2022-06-28','Content-Type':'application/json'},body:body?JSON.stringify(body):undefined});
+  if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e.message||'HTTP '+r.status);}
+  return r.json();
 }
 
-// ─── API ─────────────────────────────────────────────────
-async function callNotion(prompt) {
-  const res = await fetch("https://api.anthropic.com/v1/messages", {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({
-      model: "claude-sonnet-4-20250514",
-      max_tokens: 4000,
-      mcp_servers: [{ type: "url", url: "https://mcp.notion.com/mcp", name: "notion" }],
-      system: "You are a Notion data extractor. Use Notion MCP tools to fulfill the request. Your final response MUST be ONLY a valid JSON object or array. No markdown code fences, no explanation text before or after JSON.",
-      messages: [{ role: "user", content: prompt }]
-    })
-  });
-  const data = await res.json();
-  if (data.error) throw new Error(data.error.message);
-  const text = data.content.filter(b => b.type === "text").map(b => b.text).join("").trim();
-  const clean = text.replace(/^```json\s*/,'').replace(/```\s*$/,'').trim();
-  return JSON.parse(clean);
-}
-
-async function fetchSchema(dbId) {
-  return await callNotion(
-    `Fetch the Notion database with ID "${dbId}" using the Notion MCP. Return a JSON object:
-{"title": "database name", "properties": [{"name": "property name", "type": "property type"}]}
-Include ALL properties. Important types to look for: date, created_time, last_edited_time, files, title, rich_text.`
-  );
-}
-
-async function fetchMonthData(dbId, dateProp, imageProps, year, month) {
-  const pad = n => String(n).padStart(2,'0');
-  const start = `${year}-${pad(month+1)}-01`;
-  const lastDay = new Date(year, month+1, 0).getDate();
-  const end = `${year}-${pad(month+1)}-${pad(lastDay)}`;
-  const propsStr = imageProps.join('", "');
-  return await callNotion(
-    `Query Notion database "${dbId}". Filter pages where property "${dateProp}" is between ${start} and ${end}.
-For each page extract:
-1. Date from "${dateProp}" - if it's a date range use start. Format as "YYYY-MM-DD".
-2. All image/file URLs from properties: ["${propsStr}"]. Include every file URL found.
-3. Page title (first title property).
-
-Return JSON array: [{"date":"YYYY-MM-DD","images":["url1","url2"],"title":"page title"}]
-If no pages found, return empty array [].`
-  );
-}
-
-// ─── NORMALIZE DATE ──────────────────────────────────────
-function normalizeDate(d) {
-  if (!d) return null;
-  if (typeof d === 'object' && d.start) d = d.start;
-  return String(d).slice(0,10);
-}
-
-// ─── RENDER ──────────────────────────────────────────────
-function applyTheme() {
-  const t = S.theme;
-  document.documentElement.setAttribute('data-dark', t.dark);
-  const r = document.documentElement.style;
-  r.setProperty('--accent', t.accent);
-  r.setProperty('--accent-soft', t.accent + '20');
-  r.setProperty('--today-ring', t.accent);
-  r.setProperty('--font', FONTS[t.font] || FONTS['plus-jakarta']);
-  r.setProperty('--radius', t.radius + 'px');
-  if (!t.dark) r.setProperty('--bg', t.bg);
-}
-
-function render() {
-  applyTheme();
-  const root = document.getElementById('root');
-  const R = RENDERERS[S.screen];
-  if (R) root.innerHTML = R();
-  if (S.screen === 'calendar') attachCalEvents();
-  if (S.showSettings) renderSettings();
-  if (S.showModal) renderModal();
-}
-
-const RENDERERS = {
-  setup: () => `
-    <div class="screen">
-      <div class="setup-card">
-        <div class="setup-icon">📅</div>
-        <h1>Image Calendar</h1>
-        <p class="desc">노션 데이터베이스와 연결하여<br>날짜별 이미지 캘린더를 만들어보세요</p>
-        <div class="form-group">
-          <label>Notion Database ID 또는 URL</label>
-          <input id="db-input" type="text" placeholder="https://notion.so/... 또는 32자리 ID" />
-        </div>
-        ${S.error ? `<div class="error-msg">${S.error}</div>` : ''}
-        <button class="btn-primary" onclick="onConnect()" style="margin-top:4px">연결하기 →</button>
-      </div>
-    </div>
-  `,
-
-  loading: () => `
-    <div class="screen loading-screen">
-      <div class="spinner"></div>
-      <div class="loading-text">${S.loadingMsg || '데이터 불러오는 중...'}</div>
-    </div>
-  `,
-
-  config: () => {
-    const datePropTypes = ['date','created_time','last_edited_time'];
-    const imgPropTypes = ['files'];
-    const dateProps = S.properties.filter(p => datePropTypes.includes(p.type));
-    const imgProps = S.properties.filter(p => imgPropTypes.includes(p.type));
-    return `
-    <div class="screen">
-      <div class="config-card">
-        <h2>📋 속성 설정</h2>
-        <div class="db-name">📂 ${S.dbTitle || S.dbId}</div>
-
-        <div class="section-label">날짜 속성 선택</div>
-        <div class="form-group">
-          <select id="date-select">
-            <option value="">-- 날짜 속성 선택 --</option>
-            ${S.properties.map(p => `<option value="${p.name}" ${S.dateProperty===p.name?'selected':''}>${p.name} (${p.type})</option>`).join('')}
-          </select>
-        </div>
-
-        <div class="section-label" style="margin-top:20px">이미지 속성 선택 (다중 선택)</div>
-        ${imgProps.length === 0
-          ? `<p style="font-size:13px;color:var(--text2);margin-bottom:16px">파일/미디어 속성이 없습니다. 모든 속성 중 선택하세요.</p>`
-          : ''}
-        <div class="prop-list" id="img-prop-list">
-          ${(imgProps.length > 0 ? imgProps : S.properties.filter(p=>p.type!=='title')).map(p => `
-            <label class="prop-item ${S.imageProperties.includes(p.name)?'selected':''}">
-              <input type="checkbox" value="${p.name}" ${S.imageProperties.includes(p.name)?'checked':''} onchange="toggleImgProp(this)">
-              <span class="prop-name">${p.name}</span>
-              <span class="prop-type">${p.type}</span>
-            </label>
-          `).join('')}
-        </div>
-
-        ${S.error ? `<div class="error-msg">${S.error}</div>` : ''}
-        <div style="display:flex;gap:10px;margin-top:8px">
-          <button class="btn-secondary" onclick="S.screen='setup';render()">← 뒤로</button>
-          <button class="btn-primary" style="flex:1" onclick="onStartCalendar()">캘린더 시작 →</button>
-        </div>
-      </div>
-    </div>
-    `;
-  },
-
-  calendar: () => {
-    const { year, month } = S;
-    const monthNames = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-    const koMonths = ['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
-    const cacheKey = `${year}-${month}`;
-    const pages = S.cache[cacheKey] || null;
-    const today = new Date();
-    const isThisMonth = today.getFullYear()===year && today.getMonth()===month;
-
-    // Build date->images map
-    const dateMap = {};
-    if (pages) {
-      pages.forEach(p => {
-        if (!p.date) return;
-        const d = normalizeDate(p.date);
-        if (!d) return;
-        if (!dateMap[d]) dateMap[d] = {images:[], titles:[]};
-        dateMap[d].images.push(...(p.images||[]));
-        if (p.title) dateMap[d].titles.push(p.title);
-      });
-    }
-
-    // Build calendar
-    const firstDay = new Date(year, month, 1).getDay(); // 0=Sun
-    const offset = S.theme.startMonday ? (firstDay===0?6:firstDay-1) : firstDay;
-    const lastDate = new Date(year, month+1, 0).getDate();
-    const days = S.theme.startMonday
-      ? ['Mon','Tue','Wed','Thu','Fri','Sat','Sun']
-      : ['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
-
-    let cells = '';
-    for (let i = 0; i < offset; i++) {
-      cells += `<div class="cal-cell empty"></div>`;
-    }
-    for (let d = 1; d <= lastDate; d++) {
-      const dateStr = `${year}-${String(month+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
-      const entry = dateMap[dateStr];
-      const imgs = entry?.images?.filter(Boolean) || [];
-      const isToday = isThisMonth && today.getDate()===d;
-      const dow = (offset + d - 1) % 7;
-      const isSun = S.theme.startMonday ? dow===6 : dow===0;
-      const isSat = S.theme.startMonday ? dow===5 : dow===6;
-      const classes = ['cal-cell',
-        imgs.length>0?'has-image':'',
-        isToday?'today':'',
-        isSun?'sun-cell':'',
-        isSat?'sat-cell':''
-      ].filter(Boolean).join(' ');
-
-      cells += `<div class="${classes}" data-date="${dateStr}" data-imgs='${JSON.stringify(imgs)}' data-title="${(entry?.titles||[]).join(', ')}">
-        <span class="date-num" style="${isSun&&!imgs.length?'color:#ef4444':''}">${d}</span>
-        ${imgs.length>0 ? `<img src="${imgs[0]}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
-        ${imgs.length>1 ? `<div class="img-count">+${imgs.length-1}</div>` : ''}
-        ${isToday && !imgs.length ? `<div class="today-dot"></div>` : ''}
-      </div>`;
-    }
-
-    return `
-    <div id="calendar-app">
-      <div class="cal-header">
-        <div class="cal-title">${koMonths[month]}<span>${year}</span></div>
-        <button class="nav-btn" onclick="navigate(-1)">←</button>
-        <button class="nav-btn" onclick="navigate(1)">→</button>
-        <button class="nav-btn" onclick="goToday()" title="오늘">·</button>
-        <button class="icon-btn" onclick="openSettings()" title="설정">⚙</button>
-        <button class="icon-btn" onclick="refreshMonth()" title="새로고침" ${S.loading?'disabled':''}>↺</button>
-      </div>
-      <div class="day-headers">
-        ${days.map((d,i) => {
-          const cls = (!S.theme.startMonday && i===0) ? 'day-header sun'
-            : (!S.theme.startMonday && i===6) ? 'day-header sat'
-            : (S.theme.startMonday && i===6) ? 'day-header sun'
-            : (S.theme.startMonday && i===5) ? 'day-header sat'
-            : 'day-header';
-          return `<div class="${cls}">${d}</div>`;
-        }).join('')}
-      </div>
-      <div class="cal-grid">${cells}</div>
-      ${S.loading ? `<div style="text-align:center;padding:20px;color:var(--text2);font-size:13px"><div class="spinner" style="margin:0 auto 10px"></div>불러오는 중...</div>` : ''}
-      ${pages === null && !S.loading ? `<div style="text-align:center;padding:20px;color:var(--text2);font-size:13px">데이터를 불러오려면 새로고침을 눌러주세요 ↺</div>` : ''}
-      ${S.error ? `<div class="error-msg" style="margin-top:12px">${S.error}</div>` : ''}
-    </div>
-    `;
-  }
-};
-
-function attachCalEvents() {
-  document.querySelectorAll('.cal-cell.has-image').forEach(cell => {
-    let interval = null;
-    let idx = 0;
-    const imgs = JSON.parse(cell.dataset.imgs || '[]');
-    const img = cell.querySelector('img');
-
-    cell.addEventListener('mouseenter', () => {
-      if (imgs.length > 1 && img) {
-        interval = setInterval(() => {
-          idx = (idx + 1) % imgs.length;
-          img.style.opacity = '0';
-          setTimeout(() => { img.src = imgs[idx]; img.style.opacity = '1'; }, 200);
-        }, 900);
-      }
-    });
-    cell.addEventListener('mouseleave', () => {
-      clearInterval(interval);
-      idx = 0;
-      if (img) { img.style.opacity = '0'; setTimeout(() => { img.src = imgs[0]; img.style.opacity = '1'; }, 200); }
-    });
-    cell.addEventListener('click', () => {
-      S.showModal = { images: imgs, title: cell.dataset.title || cell.dataset.date, idx: idx };
-      renderModal();
-    });
-  });
-}
-
-function renderModal() {
-  const existing = document.getElementById('img-modal');
-  if (existing) existing.remove();
-  if (!S.showModal) return;
-  const { images, title, idx } = S.showModal;
-  const div = document.createElement('div');
-  div.id = 'img-modal';
-  div.className = 'img-modal';
-  div.innerHTML = `
-    <img src="${images[idx||0]}" alt="${title}" onclick="event.stopPropagation()">
-    ${images.length > 1 ? `<div class="modal-info">${(idx||0)+1} / ${images.length} — ${title}</div>` : `<div class="modal-info">${title}</div>`}
-  `;
-  div.addEventListener('click', () => { S.showModal = null; div.remove(); });
-  document.body.appendChild(div);
-}
-
-function renderSettings() {
-  const existing = document.getElementById('settings-overlay');
-  if (existing) existing.remove();
-  const t = S.theme;
-  const overlay = document.createElement('div');
-  overlay.id = 'settings-overlay';
-  overlay.innerHTML = `
-    <div class="settings-overlay" onclick="closeSettings()"></div>
-    <div class="settings-panel">
-      <h3>설정 <button class="settings-close" onclick="closeSettings()">✕</button></h3>
-
-      <div class="setting-row">
-        <label>다크 모드</label>
-        <div class="toggle-row">
-          <span style="font-size:13px;color:var(--text2)">${t.dark ? '🌙 다크' : '☀️ 라이트'}</span>
-          <label class="toggle">
-            <input type="checkbox" ${t.dark?'checked':''} onchange="setDark(this.checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-
-      <div class="setting-row">
-        <label>강조 색상</label>
-        <div class="preset-colors" style="margin-bottom:10px">
-          ${ACCENT_PRESETS.map(c => `<div class="preset-dot ${t.accent===c?'active':''}" style="background:${c}" onclick="setAccent('${c}')"></div>`).join('')}
-        </div>
-        <div class="color-row">
-          <input type="color" value="${t.accent}" oninput="setAccent(this.value)">
-          <span class="color-preview">${t.accent}</span>
-        </div>
-      </div>
-
-      <div class="setting-row">
-        <label>배경 색상</label>
-        <div class="color-row">
-          <input type="color" value="${t.bg}" oninput="setBg(this.value)">
-          <span class="color-preview">${t.bg}</span>
-        </div>
-      </div>
-
-      <div class="setting-row">
-        <label>폰트</label>
-        <div class="font-grid">
-          ${Object.entries(FONT_LABELS).map(([k,v]) => `
-            <div class="font-opt ${t.font===k?'active':''}" style="font-family:${FONTS[k]}" onclick="setFont('${k}')">${v}</div>
-          `).join('')}
-        </div>
-      </div>
-
-      <div class="setting-row radius-row">
-        <label>모서리 둥글기: ${t.radius}px</label>
-        <input type="range" min="0" max="20" value="${t.radius}" oninput="setRadius(this.value)">
-      </div>
-
-      <div class="setting-row">
-        <label>주 시작일</label>
-        <div class="toggle-row">
-          <span style="font-size:13px;color:var(--text2)">${t.startMonday ? '월요일' : '일요일'}</span>
-          <label class="toggle">
-            <input type="checkbox" ${t.startMonday?'checked':''} onchange="setStartMonday(this.checked)">
-            <span class="toggle-slider"></span>
-          </label>
-        </div>
-      </div>
-
-      <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
-
-      <div class="setting-row">
-        <label>데이터베이스</label>
-        <div style="font-size:12px;color:var(--text2);margin-bottom:10px">📂 ${S.dbTitle || S.dbId}<br><span style="font-size:11px;opacity:0.7">날짜: ${S.dateProperty} | 이미지: ${S.imageProperties.join(', ')}</span></div>
-        <button class="btn-secondary" style="width:100%;font-size:13px" onclick="editConfig()">속성 재설정</button>
-      </div>
-      <button class="btn-secondary" style="width:100%;margin-top:8px;font-size:13px;color:#ef4444;border-color:#ef4444" onclick="resetAll()">연결 초기화</button>
-    </div>
-  `;
-  document.body.appendChild(overlay);
-}
-
-// ─── HANDLERS ────────────────────────────────────────────
-async function onConnect() {
-  let val = document.getElementById('db-input').value.trim();
-  const match = val.match(/[0-9a-f]{8}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{4}-?[0-9a-f]{12}|[0-9a-f]{32}/i);
-  if (match) val = match[0].replace(/-/g,'');
-  if (!val || val.length < 10) { S.error = '유효한 데이터베이스 ID를 입력해주세요'; render(); return; }
-  S.dbId = val; S.error = '';
-  S.screen = 'loading'; S.loadingMsg = '데이터베이스 스키마 불러오는 중...'; render();
-  try {
-    const schema = await fetchSchema(val);
-    S.dbTitle = schema.title || val;
-    S.properties = schema.properties || [];
-    // auto-select if only one of each
-    const fileProp = S.properties.find(p=>p.type==='files');
-    const dateProp = S.properties.find(p=>p.type==='date') || S.properties.find(p=>p.type==='created_time');
-    if (dateProp && !S.dateProperty) S.dateProperty = dateProp.name;
-    if (fileProp && S.imageProperties.length===0) S.imageProperties = [fileProp.name];
-    S.screen = 'config'; render();
-  } catch(e) {
-    S.error = '연결 실패: ' + (e.message||'알 수 없는 오류'); S.screen = 'setup'; render();
+async function connect(){
+  const url=document.getElementById('dbu').value.trim();
+  const dp=document.getElementById('dp').value.trim();
+  const ip=document.getElementById('ip').value.trim();
+  hideErr();
+  if(!url){showErr('DB URL을 입력해주세요');return;}
+  const id=exId(url);
+  if(!id){showErr('URL에서 DB ID를 찾을 수 없어요');return;}
+  const btn=document.getElementById('cb');
+  btn.disabled=true;btn.textContent='연결 중...';
+  try{
+    const meta=await nReq('databases/'+fId(id));
+    C.dbId=id;C.dp=dp||'날짜';C.ip=ip||'파일과 미디어';
+    C.title=meta.title?.[0]?.plain_text||'Notion DB';
+    sv();showCal();
+  }catch(e){
+    showErr('연결 실패: '+e.message+'\n→ Share → Publish to web을 켜셨나요?');
+    btn.disabled=false;btn.textContent='연결하기 →';
   }
 }
 
-function toggleImgProp(cb) {
-  if (cb.checked) { if (!S.imageProperties.includes(cb.value)) S.imageProperties.push(cb.value); }
-  else S.imageProperties = S.imageProperties.filter(p=>p!==cb.value);
-  cb.closest('.prop-item').classList.toggle('selected', cb.checked);
+function showErr(m){const el=document.getElementById('err');el.style.display='block';el.textContent=m;}
+function hideErr(){document.getElementById('err').style.display='none';}
+function gDate(p){if(!p)return null;if(p.type==='date'&&p.date)return p.date.start?.slice(0,10);if(p.type==='created_time')return p.created_time?.slice(0,10);return null;}
+function gImgs(p){if(!p||p.type!=='files')return[];return p.files.map(f=>f.type==='external'?f.external?.url:f.file?.url).filter(Boolean);}
+function gTitle(page){for(const v of Object.values(page.properties)){if(v.type==='title'&&v.title?.length)return v.title.map(t=>t.plain_text).join('');}return '(제목 없음)';}
+
+async function fetchM(y,m){
+  const k=`${y}-${m}`;if(cache[k])return;
+  const pad=n=>String(n).padStart(2,'0');
+  const s=`${y}-${pad(m+1)}-01`,e=`${y}-${pad(m+1)}-${new Date(y,m+1,0).getDate()}`;
+  const data=await nReq('databases/'+fId(C.dbId)+'/query',{page_size:100,filter:{and:[{property:C.dp,date:{on_or_after:s}},{property:C.dp,date:{on_or_before:e}}]}});
+  cache[k]=data.results.map(p=>({date:gDate(p.properties[C.dp]),imgs:gImgs(p.properties[C.ip]),title:gTitle(p)})).filter(e=>e.date);
 }
 
-async function onStartCalendar() {
-  S.dateProperty = document.getElementById('date-select')?.value || S.dateProperty;
-  if (!S.dateProperty) { S.error = '날짜 속성을 선택해주세요'; render(); return; }
-  if (S.imageProperties.length===0) { S.error = '이미지 속성을 하나 이상 선택해주세요'; render(); return; }
-  S.error = '';
-  await saveConfig();
-  S.screen = 'calendar'; render();
-  await loadMonth(S.year, S.month);
+function applyT(){
+  document.documentElement.style.setProperty('--acc',C.acc);
+  document.documentElement.style.setProperty('--r',C.r+'px');
+  C.dark?document.documentElement.setAttribute('data-dark',''):document.documentElement.removeAttribute('data-dark');
 }
 
-async function loadMonth(year, month) {
-  const key = `${year}-${month}`;
-  if (S.cache[key]) { render(); return; }
-  S.loading = true; S.error = ''; render();
-  try {
-    const pages = await fetchMonthData(S.dbId, S.dateProperty, S.imageProperties, year, month);
-    S.cache[key] = Array.isArray(pages) ? pages : [];
-  } catch(e) {
-    S.error = '데이터 로드 실패: ' + (e.message||'오류'); S.cache[key] = [];
+function showCal(){document.getElementById('setup').style.display='none';document.getElementById('app').style.display='block';applyT();buildDH();renderCal();}
+
+function buildDH(){
+  const days=C.mon?['월','화','수','목','금','토','일']:['일','월','화','수','목','금','토'];
+  const row=document.getElementById('drow');row.innerHTML='';
+  days.forEach((d,i)=>{const el=document.createElement('div');const sun=C.mon?i===6:i===0,sat=C.mon?i===5:i===6;el.className='dh'+(sun?' sun':'')+(sat?' sat':'');el.textContent=d;row.appendChild(el);});
+}
+
+async function renderCal(){
+  const ko=['1월','2월','3월','4월','5월','6월','7월','8월','9월','10월','11월','12월'];
+  document.getElementById('htitle').innerHTML=`${ko[M]} <span>${Y}</span>`;
+  document.getElementById('ftxt').textContent=C.title+' 연동됨';
+  const grid=document.getElementById('grid'),lmsg=document.getElementById('lmsg');
+  grid.innerHTML='';lmsg.style.display='block';lmsg.innerHTML='<span class="spin"></span>불러오는 중...';
+  try{await fetchM(Y,M);}catch(e){lmsg.innerHTML='❗ '+e.message;return;}
+  lmsg.style.display='none';
+  const td=new Date(),tds=`${td.getFullYear()}-${String(td.getMonth()+1).padStart(2,'0')}-${String(td.getDate()).padStart(2,'0')}`;
+  const first=new Date(Y,M,1).getDay(),off=C.mon?(first===0?6:first-1):first,last=new Date(Y,M+1,0).getDate();
+  const entries=cache[`${Y}-${M}`]||[],dm={};
+  entries.forEach(e=>{if(!dm[e.date])dm[e.date]=[];dm[e.date].push(e);});
+  for(let i=0;i<off;i++){const el=document.createElement('div');el.className='cell empty';grid.appendChild(el);}
+  for(let d=1;d<=last;d++){
+    const ds=`${Y}-${String(M+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const dow=(off+d-1)%7,sun=C.mon?dow===6:dow===0,sat=C.mon?dow===5:dow===6,isT=ds===tds;
+    const es=dm[ds]||[],imgs=es.flatMap(e=>e.imgs);
+    const cell=document.createElement('div');
+    cell.className='cell'+(sun?' sun':'')+(sat?' sat':'')+(isT?' today':'')+(imgs.length?' hi':'');
+    const dn=document.createElement('span');dn.className='dn';dn.textContent=d;cell.appendChild(dn);
+    if(imgs.length){
+      const img=document.createElement('img');img.src=imgs[0];img.alt='';img.onerror=()=>img.style.display='none';cell.appendChild(img);
+      let hi=null,hx=0;
+      cell.addEventListener('mouseenter',()=>{if(imgs.length>1){hi=setInterval(()=>{hx=(hx+1)%imgs.length;img.style.opacity='0';setTimeout(()=>{img.src=imgs[hx];img.style.opacity='1';},200);},900);}});
+      cell.addEventListener('mouseleave',()=>{clearInterval(hi);hx=0;img.style.opacity='0';setTimeout(()=>{img.src=imgs[0];img.style.opacity='1';},200);});
+      if(imgs.length>1){const b=document.createElement('div');b.className='mbadge';b.textContent='+'+(imgs.length-1);cell.appendChild(b);}
+      cell.addEventListener('click',()=>openMo(imgs,es.map(e=>e.title).join(', '),ds));
+    }else if(isT){const dot=document.createElement('div');dot.className='tdot';cell.appendChild(dot);}
+    grid.appendChild(cell);
   }
-  S.loading = false; render();
 }
 
-async function navigate(dir) {
-  S.month += dir;
-  if (S.month > 11) { S.month = 0; S.year++; }
-  if (S.month < 0) { S.month = 11; S.year--; }
-  render();
-  await loadMonth(S.year, S.month);
-}
-async function goToday() {
-  S.year = new Date().getFullYear(); S.month = new Date().getMonth();
-  render(); await loadMonth(S.year, S.month);
-}
-async function refreshMonth() {
-  delete S.cache[`${S.year}-${S.month}`];
-  render(); await loadMonth(S.year, S.month);
-}
+async function nav(d){M+=d;if(M>11){M=0;Y++;}if(M<0){M=11;Y--;}await renderCal();}
+async function goT(){Y=new Date().getFullYear();M=new Date().getMonth();await renderCal();}
+async function refresh(){cache={};await renderCal();closeS();}
+function reset(){if(!confirm('초기화할까요?'))return;localStorage.removeItem('icw3');location.reload();}
 
-function openSettings() { S.showSettings = true; renderSettings(); }
-function closeSettings() { S.showSettings = false; const e=document.getElementById('settings-overlay'); if(e)e.remove(); }
-function editConfig() { closeSettings(); S.screen='config'; render(); }
-async function resetAll() {
-  if (!confirm('연결을 초기화할까요?')) return;
-  S.dbId=''; S.dbTitle=''; S.properties=[]; S.dateProperty=''; S.imageProperties=[]; S.cache={};
-  try { await window.storage.delete('notion_cal_config'); } catch(e){}
-  closeSettings(); S.screen='setup'; render();
+function openMo(imgs,t,d){mo={imgs,idx:0,t,d};updMo();document.getElementById('ov').classList.add('open');}
+function updMo(){document.getElementById('mi').src=mo.imgs[mo.idx];document.getElementById('mt').textContent=mo.t;document.getElementById('md').textContent=mo.d;document.getElementById('mii').textContent=`${mo.idx+1}/${mo.imgs.length}`;document.getElementById('mp').disabled=mo.idx===0;document.getElementById('mn').disabled=mo.idx===mo.imgs.length-1;}
+function moN(d){mo.idx=Math.max(0,Math.min(mo.imgs.length-1,mo.idx+d));updMo();}
+function closeMo(){document.getElementById('ov').classList.remove('open');}
+
+function openS(){
+  const cp=document.getElementById('cpr');cp.innerHTML='';
+  PRES.forEach(c=>{const d=document.createElement('div');d.className='cd'+(C.acc===c?' on':'');d.style.background=c;d.onclick=()=>{C.acc=c;applyT();sv();cp.querySelectorAll('.cd').forEach(x=>x.classList.remove('on'));d.classList.add('on');};cp.appendChild(d);});
+  document.getElementById('rr').value=C.r;
+  document.getElementById('dkt').checked=C.dark;
+  document.getElementById('mnt').checked=C.mon;
+  document.getElementById('wsl').textContent=C.mon?'월요일':'일요일';
+  document.getElementById('sp').style.display='block';
+  document.getElementById('sov').classList.add('open');
 }
+function closeS(){document.getElementById('sp').style.display='none';document.getElementById('sov').classList.remove('open');}
+function setR(v){C.r=parseInt(v);document.documentElement.style.setProperty('--r',v+'px');sv();}
+function setDk(v){C.dark=v;applyT();sv();}
+function setMon(v){C.mon=v;document.getElementById('wsl').textContent=v?'월요일':'일요일';buildDH();renderCal();sv();}
 
-function setDark(v) { S.theme.dark=v; applyTheme(); renderSettings(); }
-function setAccent(v) { S.theme.accent=v; applyTheme(); renderSettings(); }
-function setBg(v) { S.theme.bg=v; if(!S.theme.dark){document.documentElement.style.setProperty('--bg',v);} renderSettings(); }
-function setFont(v) { S.theme.font=v; applyTheme(); renderSettings(); }
-function setRadius(v) { S.theme.radius=parseInt(v); applyTheme(); renderSettings(); }
-function setStartMonday(v) { S.theme.startMonday=v; render(); renderSettings(); saveConfig(); }
-
-// ─── INIT ─────────────────────────────────────────────────
-(async () => {
-  const hasSaved = await loadConfig();
-  if (hasSaved && S.dbId && S.dateProperty) {
-    S.screen = 'calendar';
-    render();
-    await loadMonth(S.year, S.month);
-  } else {
-    S.screen = 'setup';
-    render();
-  }
-})();
+(function(){if(ld()&&C.dbId)showCal();})();
 </script>
 </body>
 </html>
